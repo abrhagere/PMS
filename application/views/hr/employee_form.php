@@ -53,7 +53,31 @@
                     <div class="panel-body">
 
                          <?php echo form_open_multipart('Chrm/create_employee') ?>
+                         <div class="form-group row">
+                        <label for="stock_name" class="col-sm-2 col-form-div"><?php echo display('stock_name') ?></label>
+                        <div class="col-sm-12">
+                        <select name="stock_name" id="stock_id" class="form-control" required tabindex="1"> 
+                                     <option value=""><?php echo display('select_stock'); ?></option>
+                                           <?php 
+                                           if (!empty($all_stock) && is_array($all_stock)) { 
+                                               foreach ($all_stock as $specific_stock) {
+                                           ?>
+                                               <option value="<?php echo $specific_stock['id']; ?>">
+                                                   <?php echo $specific_stock['stock_name']; ?>
+                                               </option>
+                                           <?php
+                                               }
+                                           } else {
+                                             echo '<option value="">No stocks assigned</option>';
+                                           }
+                                           ?>
+                         </select>
+                        </div>
+                        
+                         
+                    </div>
                     <div class="form-group row">
+
                         <label for="first_name" class="col-sm-2 col-form-div"><?php echo display('first_name') ?> <i class="text-danger">*</i></label>
                         <div class="col-sm-4">
                             <input name="first_name" class="form-control" type="text" placeholder="<?php echo display('first_name') ?>" id="first_name">

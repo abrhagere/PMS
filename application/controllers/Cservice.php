@@ -207,6 +207,7 @@ class Cservice extends CI_Controller {
         echo json_encode($service_info);
     }
 // Service Invoice Entry
+
 public function insert_service_invoice(){
         $CI = & get_instance();
         $CI->auth->check_admin_auth();
@@ -232,38 +233,57 @@ public function insert_service_invoice(){
         $this->template->full_admin_html_view($content);
     }
 
-        public function manage_service_invoice(){
-        $data['title']  = display('manage_service_invoice');
-        $config["base_url"] = base_url('Cservice/manage_service_invoice');
-        $config["total_rows"]  = $this->db->count_all('service_invoice');
-        $config["per_page"]    = 20;
-        $config["uri_segment"] = 3;
-        $config["last_link"] = "Last"; 
-        $config["first_link"] = "First"; 
-        $config['next_link'] = 'Next';
-        $config['prev_link'] = 'Prev';  
-        $config['full_tag_open'] = "<ul class='pagination col-xs pull-right'>";
-        $config['full_tag_close'] = "</ul>";
-        $config['num_tag_open'] = '<li>';
-        $config['num_tag_close'] = '</li>';
-        $config['cur_tag_open'] = "<li class='disabled'><li class='active'><a href='#'>";
-        $config['cur_tag_close'] = "<span class='sr-only'></span></a></li>";
-        $config['next_tag_open'] = "<li>";
-        $config['next_tag_close'] = "</li>";
-        $config['prev_tag_open'] = "<li>";
-        $config['prev_tagl_close'] = "</li>";
-        $config['first_tag_open'] = "<li>";
-        $config['first_tagl_close'] = "</li>";
-        $config['last_tag_open'] = "<li>";
-        $config['last_tagl_close'] = "</li>";
-        /* ends of bootstrap */
-        $this->pagination->initialize($config);
-        $page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
-        $data["links"] = $this->pagination->create_links();
-        $data['service'] = $this->Service->service_invoice_list($config["per_page"], $page);
-          $content     = $this->parser->parse('service/service_invoice', $data, true);
-          $this->template->full_admin_html_view($content);  
+        public function manage_service_invoice()
+{
+    $CI =& get_instance();
+    
+    // Check if it's an AJAX request (filter)
+    if ($this->input->is_ajax_request()) {
+        $from_date = $this->input->post('from_date');
+        $to_date   = $this->input->post('to_date');
+
+        $this->load->model('Service');
+        $service_invoices = $this->Service->filter_service_invoice($from_date, $to_date);
+
+        echo json_encode($service_invoices);
+        return; // Stop further execution for AJAX
     }
+
+    // Normal page load with pagination
+    $data['title']  = display('manage_service_invoice');
+    $config["base_url"] = base_url('Cservice/manage_service_invoice');
+    $config["total_rows"]  = $this->db->count_all('service_invoice');
+    $config["per_page"]    = 20;
+    $config["uri_segment"] = 3;
+    // Bootstrap pagination styling
+    $config["last_link"] = "Last"; 
+    $config["first_link"] = "First"; 
+    $config['next_link'] = 'Next';
+    $config['prev_link'] = 'Prev';  
+    $config['full_tag_open'] = "<ul class='pagination col-xs pull-right'>";
+    $config['full_tag_close'] = "</ul>";
+    $config['num_tag_open'] = '<li>';
+    $config['num_tag_close'] = '</li>';
+    $config['cur_tag_open'] = "<li class='disabled'><li class='active'><a href='#'>";
+    $config['cur_tag_close'] = "<span class='sr-only'></span></a></li>";
+    $config['next_tag_open'] = "<li>";
+    $config['next_tag_close'] = "</li>";
+    $config['prev_tag_open'] = "<li>";
+    $config['prev_tagl_close'] = "</li>";
+    $config['first_tag_open'] = "<li>";
+    $config['first_tagl_close'] = "</li>";
+    $config['last_tag_open'] = "<li>";
+    $config['last_tagl_close'] = "</li>";
+
+    $this->pagination->initialize($config);
+    $page = ($this->uri->segment(3)) ? $this->uri->segment(3) : 0;
+    $data["links"] = $this->pagination->create_links();
+    $data['service'] = $this->Service->service_invoice_list($config["per_page"], $page);
+
+    $content = $this->parser->parse('service/service_invoice', $data, true);
+    $this->template->full_admin_html_view($content);  
+}
+
 
     public function service_invoic_delete($service_id) {
         $this->load->model('Service');

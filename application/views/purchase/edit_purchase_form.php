@@ -167,7 +167,6 @@
                                             <th class="text-center" width="20%"><?php echo display('item_information') ?><i class="text-danger">*</i></th>
                                             <th class="text-center"><?php echo display('batch_id') ?> <i class="text-danger">*</i></th>
                                              <th class="text-center"><?php echo display('expeire_date') ?> <i class="text-danger">*</i></th>
-                                            <th class="text-center"><?php echo display('stock_ctn') ?></th>
                                             <th class="text-center"><?php echo display('quantity') ?> <i class="text-danger">*</i></th>
                                             <th class="text-center"><?php echo display('manufacturer_rate') ?><i class="text-danger">*</i></th>
                                             <th class="text-center"><?php echo display('sell_price') ?><i class="text-danger">*</i></th>
@@ -183,6 +182,7 @@
                                      {purchase_info}
                                     <tr>
                                         <td class="span3 manufacturer">
+                                            <input type="hidden" name="stock_id" value="{stock_id}" >
                                            <input type="text" name="product_name" required class="form-control product_name productSelection" onkeypress="product_pur_or_list({sl});" placeholder="<?php echo display('product_name') ?>" id="product_name_{sl}" tabindex="5" value="{product_name}"  >
 
                                             <input type="hidden" class="autocomplete_hidden_value product_id_{sl}" name="product_id[]" id="SchoolHiddenId" value="{product_id}"/>
@@ -197,9 +197,7 @@
                                             <td>
                                                 <input type="text" name="expeire_date[]" id="expeire_date_{sl}" class="form-control datepicker"   tabindex="12" placeholder="<?php echo display('expeire_date') ?>" value="{expeire_date}" required="required" onchange="checkExpiredate({sl})"/>
                                             </td>
-                                       <td class="wt">
-                                                <input type="text" id="available_quantity_{sl}" class="form-control text-right stock_ctn_{sl}" placeholder="0.00" readonly/>
-                                            </td>
+                                       
                                             <td class="text-right">
                                                 <input type="text" name="product_quantity[]" id="quantity_{sl}" required="required" class="form-control text-right store_cal_{sl}" onkeyup="calculate_store({sl}),checkqty({sl});" onchange="calculate_store({sl});" placeholder="0.00" value="{quantity}" min="0" tabindex="6"/>
                                             </td>
@@ -223,7 +221,7 @@
                                 <tfoot>
                                     <tr>
                                         <td colspan="2">
-                                           <input type="button" id="add_invoice_item" class="btn btn-info" name="add-invoice-item"  onClick="addPurchaseOrderField1('addPurchaseItem');" value="<?php echo display('add_new_item') ?>"  tabindex="9"/>
+                                           <!--<input type="button" id="add_invoice_item" class="btn btn-info" name="add-invoice-item"  onClick="addPurchaseOrderField1('addPurchaseItem');" value="<?php //echo display('add_new_item') ?>"  tabindex="9"/>-->
 
                                             <input type="hidden" name="baseUrl" class="baseUrl" value="<?php echo base_url();?>"/>
                                         </td>

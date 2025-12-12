@@ -98,7 +98,7 @@ public function getProductList($postData=null){
  }
 
          $generic_name = '<a href="'.$base_url.'Cproduct/medicine_search_details/'.$record->product_id.'">'.$record->generic_name.'</a>';
-         $manufacturer = '<a href="'.$base_url.'Cproduct/medicine_search_manufactures/'.$record->manufacturer_id.'">'.$record->manufacturer_name.'</a>';
+         $manufacturer = $record->manufacturer_name;
           $medicine_name = '<a href="'.$base_url.'Cproduct/product_details/'.$record->product_id.'" class="" data-toggle="tooltip" data-placement="left" >'.$record->product_name.'('.$record->strength.')'.'</a>';
                
             $data[] = array( 
@@ -369,11 +369,15 @@ public function getProductList($postData=null){
 	// Product Purchase Report
 	public function product_purchase_info($product_id)
 	{
-		$this->db->select('a.*,b.*,sum(b.quantity) as quantity,sum(b.total_amount) as total_amount,c.manufacturer_name');
+		$CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+		$this->db->select('a.*,b.*,sum(b.quantity) as quantity,sum(b.total_amount) as total_amount,c.manufacturer_name,s.stock_name');
 		$this->db->from('product_purchase a');
 		$this->db->join('product_purchase_details b','b.purchase_id = a.purchase_id');
 		$this->db->join('manufacturer_information c','c.manufacturer_id = a.manufacturer_id');
+		$this->db->join('stock s', 's.id = b.stock_id', 'left');
 		$this->db->where('b.product_id',$product_id);
+		$this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
 		$this->db->order_by('a.purchase_id','asc');
 		$this->db->group_by('a.purchase_id');
 		$query = $this->db->get();
@@ -384,12 +388,18 @@ public function getProductList($postData=null){
 	}
 	// Invoice Data for specific data
 	public function invoice_data($product_id)
+
 {
-    $this->db->select('a.*, b.*, b.paid_amount, b.manufacturer_rate, c.customer_name');
+	$CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+    $this->db->select('a.*, b.*, b.paid_amount, b.manufacturer_rate, c.customer_name,s.stock_name,CONCAT(u.first_name, " ", u.last_name) AS sale_by');
     $this->db->from('invoice a');
-    $this->db->join('invoice_details b', 'b.invoice_id = a.invoice_id');
-    $this->db->join('customer_information c', 'c.customer_id = a.customer_id');
+    $this->db->join('users u', 'u.user_id = a.sales_by','left');
+	 $this->db->join('invoice_details b', 'b.invoice_id = a.invoice_id','left');
+    $this->db->join('customer_information c', 'c.customer_id = a.customer_id','left');
+	$this->db->join('stock s', 's.id = b.stock_id', 'left','left');
     $this->db->where('b.product_id', $product_id);
+		$this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
     $this->db->order_by('a.invoice_id', 'asc');
     $query = $this->db->get();
 
@@ -457,7 +467,7 @@ public function getProductList($postData=null){
 	}	
 
 	// product batch id  view_m_total_batch_stock
-	public function batch_search_item($product_id){
+	public function batch_search_item($product_id,$stock_id){
 		  $this->db->select("a.*,
 				m.product_name,
 				m.strength,
@@ -465,6 +475,7 @@ public function getProductList($postData=null){
          $this->db->from('product_purchase_details a');
          $this->db->join('product_information m','m.product_id = a.product_id','left');
          $this->db->where('a.product_id',$product_id);
+		 $this->db->where('a.stock_id',$stock_id);
          $this->db->group_by('a.batch_id');
          $this->db->limit(50);
         $query = $this->db->get();

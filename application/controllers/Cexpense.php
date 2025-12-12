@@ -14,7 +14,15 @@ class Cexpense extends CI_Controller {
     }
 
      public function add_expense(){
+      $CI =& get_instance();
+      $CI->load->model('Stocks');
+		$user_id = $CI->session->userdata('user_id');
+		//$user_id = $CI->session->userdata('user_id');
+		// ✅ Load only stocks assigned to this user
+		$all_stock = $CI->Stocks->get_stocks_assigned_to_user($user_id);
+
     $data['title']  = display('add_expense');
+    $data['all_stock']  = $all_stock;
     $data['expense_item'] = $this->Expense_model->expense_item_list();
     $data['bank_list']    = $this->Expense_model->bank_list();
     $content = $this->parser->parse('expense/expense_form', $data, true);
@@ -60,6 +68,7 @@ public function expense_detail($type = null) {
     // Get expense data by type
     $data['details'] = $this->Expense_model->get_expense_details_by_type($type);
     $data['expense_type'] = $type;
+    $data['stock_name'] = $stock_name;
 
     // Correct view name!
    //$this->load->view('expense/expense_detaill', $data);

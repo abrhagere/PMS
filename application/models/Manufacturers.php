@@ -294,8 +294,12 @@ class Manufacturers extends CI_Model {
 	}
 	// Second 
 	public function manufacturer_product_sale1(){
-		$this->db->select('*');
-		$this->db->from('manufacturer_ledger');
+		$CI =& get_instance();
+		$user_id = $CI->session->userdata('user_id');
+		$this->db->select('l.*, s.stock_name');
+		$this->db->from('manufacturer_ledger l');
+		$this->db->join('stock s', 's.id = l.stock_id','left');
+		$this->db->where("s.assign_users LIKE '%\"$user_id\"%'",null,false);
 		$query = $this->db->get();
 		if ($query->num_rows() > 0) {
 			return $query->result_array();	
@@ -304,18 +308,26 @@ class Manufacturers extends CI_Model {
 	}
 	
 	//To get certain manufacturer's chalan info by which this company got products day by day
-	public function manufacturers_ledger($manufacturer_id,$start,$end)
-	{ 
-		$this->db->select('*');
-		$this->db->from('manufacturer_ledger');
-		$this->db->where('manufacturer_id',$manufacturer_id);
-		$this->db->where(array('date >='=>$start , 'date <='=>$end));
-		$query = $this->db->get();
-		if ($query->num_rows() > 0) {
-			return $query->result_array();	
-		}
-		return false;
-	}
+	public function manufacturers_ledger($manufacturer_id, $start, $end)
+{ 
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+
+    // Select specific columns (including stock_name from the stock table)
+    $this->db->select('l.*, s.stock_name');  // Select all columns from manufacturer_ledger and stock_name from stock table
+    $this->db->from('manufacturer_ledger l');
+    $this->db->join('stock s', 's.id = l.stock_id', 'left');  // Join the stock table on stock_id
+    $this->db->where('l.manufacturer_id', $manufacturer_id);  // Filter by manufacturer_id
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);  // Filter by the logged-in user
+    $this->db->where(array('l.date >=' => $start, 'l.date <=' => $end));  // Filter by date range
+    $query = $this->db->get();
+
+    if ($query->num_rows() > 0) {
+        return $query->result_array();  // Return results as an array
+    }
+    return false;  // If no data found, return false
+}
+
 
 	//Retrieve manufacturer Transaction Summary
 	public function manufacturers_transection_summary($manufacturer_id,$start,$end)
@@ -392,14 +404,18 @@ class Manufacturers extends CI_Model {
 	################################################################################################ manufacturer sales details all menu################
 	public function manufacturer_sales_details_all($per_page,$page)
 	{
+		$CI =& get_instance();
+        $user_id = $CI->session->userdata('user_id');
 		$this->db->select('a.*,
 						CAST(a.quantity*a.manufacturer_rate AS DECIMAL(16,2) ) as total,b.*,
-					c.date');
+					c.date,s.stock_name');
 		$this->db->from('invoice_details a');
 		$this->db->join('invoice c','c.invoice_id=a.invoice_id','left');
+	    $this->db->join('stock s', 's.id = a.stock_id', 'left');
 		$this->db->join('product_information b','b.product_id=a.product_id','left');
 		$this->db->order_by('c.date','desc');
 		$this->db->limit($per_page,$page);
+		$this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
 		$query = $this->db->get();
 		if ($query->num_rows() > 0) {
 			return $query->result_array();	
@@ -657,9 +673,14 @@ class Manufacturers extends CI_Model {
 
 
 	public function manufacturer_product_sale_info($manufacturer_id){
-		$this->db->select('*');
-		$this->db->from('manufacturer_ledger');
+		
+		$CI =& get_instance();
+       $user_id = $CI->session->userdata('user_id');
+	    $this->db->select('l.*, s.stock_name');
+		$this->db->from('manufacturer_ledger l');
+		$this->db->join('stock s', 's.id = l.stock_id','left');
 		$this->db->where('manufacturer_id',$manufacturer_id);
+		$this->db->where("s.assign_users LIKE '%\"$user_id\"%'",null,false);
 		$query = $this->db->get();
 		if ($query->num_rows() > 0) {
 			return $query->result_array();	

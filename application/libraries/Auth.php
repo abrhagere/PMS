@@ -26,6 +26,14 @@ class Auth {
 			 		'delete' => $value->delete
 			 	);
 			}
+		
+		// Get user role IDs from sec_userrole table
+		$user_roles = $CI->db->select('roleid')
+		                      ->from('sec_userrole')
+		                      ->where('user_id', $result[0]['user_id'])
+		                      ->get()
+		                      ->result_array();
+		$role_ids = array_column($user_roles, 'roleid');
 
         if ($result)
 		{
@@ -51,7 +59,8 @@ class Auth {
 				'user_type' 	    => $result[0]['user_type'],
 				'user_name' 	    => $result[0]['first_name']." ".$result[0]['last_name'],
 				'user_email' 		=> $result[0]['username'],
-                'permission'  		=> json_encode($permission)
+                'permission'  		=> json_encode($permission),
+                'role_ids'          => json_encode($role_ids)  // Store user's role IDs
             );
 
           	$CI->session->set_userdata($user_data);

@@ -210,6 +210,7 @@ public function todays_sales_report($links=null, $per_page=null, $page=null)
             // Profit calculations
             $sales_report[$k]['grand_profit'] = $total_amount - $manufacturer_cost;
             $sales_report[$k]['paid_profit']  = $paid_amount - $manufacturer_cost;
+			$sales_report[$k]['stock_name'] = !empty($v['stock_name']) ? $v['stock_name'] : 'N/A';
 
             // Accumulate totals
             $sales_amount       += $total_amount;
@@ -246,6 +247,7 @@ public function todays_sales_report($links=null, $per_page=null, $page=null)
         'paid_profit'        => number_format($paid_total - $manufacturer_total, 2, '.', ','),
         'sales_report'       => $sales_report,
         'purchase_report'    => $purchase_report,
+		'stock_name'    => $stock_name,
         'purchase_amount'    => number_format($purchase_amount, 2, '.', ','),
         'company_info'       => $company_info,
         'currency'           => $currency_details[0]['currency'],
@@ -291,6 +293,7 @@ public function todays_sales_report($links=null, $per_page=null, $page=null)
             $sales_report[$k]['due_amount']    = $due_amount;
             $sales_report[$k]['grand_profit']  = $total_amount - $manufacturer_cost;
             $sales_report[$k]['paid_profit']   = $paid_amount - $manufacturer_cost;
+			$sales_report[$k]['stock_name'] = !empty($v['stock_name']) ? $v['stock_name'] : 'N/A';
 
             $sales_amount       += $total_amount;
             $paid_total         += $paid_amount;
@@ -315,6 +318,7 @@ public function todays_sales_report($links=null, $per_page=null, $page=null)
         'paid_profit'        => number_format($paid_total - $manufacturer_total, 2, '.', ','),
         'sales_report'       => $sales_report,
         'company_info'       => $company_info,
+		'stock_name'       => $stock_name,
         'currency'           => $currency_details[0]['currency'],
         'position'           => $currency_details[0]['currency_position'],
         'links'              => '',
@@ -323,41 +327,46 @@ public function todays_sales_report($links=null, $per_page=null, $page=null)
     return $CI->parser->parse('report/sales_report', $data, true);
 }
 
-
-
 	// Retrieve todays_purchase_report
-	public function todays_purchase_report($links=null,$per_page=null,$page=null)
-	{
-		$CI =& get_instance();
-		$CI->load->model('Reports');
-		$CI->load->model('Web_settings');
-		$CI->load->library('occational');
-		$purchase_report = $CI->Reports->todays_purchase_report($per_page,$page);		
-		$purchase_amount = 0;
+	public function todays_purchase_report($links = null, $per_page = null, $page = null)
+{
+    $CI =& get_instance();
+    $CI->load->model('Reports');
+    $CI->load->model('Web_settings');
+    $CI->load->library('occational');
 
-		if(!empty($purchase_report)){
-			$i=0;
-			foreach($purchase_report as $k=>$v){$i++;
-			    $purchase_report[$k]['sl']=$i;
-			    $purchase_report[$k]['prchse_date'] = $CI->occational->dateConvert($purchase_report[$k]['purchase_date']);
-				$purchase_amount = $purchase_amount+$purchase_report[$k]['grand_total_amount'];
-			}
-		}
+    $purchase_report = $CI->Reports->todays_purchase_report($per_page, $page);
+    $purchase_amount = 0;
 
-		$currency_details = $CI->Web_settings->retrieve_setting_editdata();
-		$company_info = $CI->Reports->retrieve_company();
-		$data = array(
-				'title' 		=> display('todays_purchase_report'),
-				'purchase_amount' =>  number_format($purchase_amount, 2, '.', ','),
-				'purchase_report' => $purchase_report,
-				'company_info' 	=> $company_info,
-				'currency' 		=> $currency_details[0]['currency'],
-				'position' 		=> $currency_details[0]['currency_position'],
-				'links' 		=> $links,
-			);
-		$reportList = $CI->parser->parse('report/purchase_report',$data,true);
-		return $reportList;
-	}
+    if (!empty($purchase_report)) {
+        $i = 0;
+        foreach ($purchase_report as $k => $v) {
+            $i++;
+            $purchase_report[$k]['sl'] = $i;
+            $purchase_report[$k]['prchse_date'] = $CI->occational->dateConvert($purchase_report[$k]['purchase_date']);
+            $purchase_report[$k]['stock_name'] = $purchase_report[$k]['stock_name']; // add this line if you want to explicitly handle it
+            $purchase_amount += $purchase_report[$k]['grand_total_amount'];
+        }
+    }
+
+    $currency_details = $CI->Web_settings->retrieve_setting_editdata();
+    $company_info = $CI->Reports->retrieve_company();
+
+    $data = array(
+        'title'           => display('todays_purchase_report'),
+        'purchase_amount' => number_format($purchase_amount, 2, '.', ','),
+        'purchase_report' => $purchase_report,
+        'company_info'    => $company_info,
+		"stock_name"     =>$stock_name,
+        'currency'        => $currency_details[0]['currency'],
+        'position'        => $currency_details[0]['currency_position'],
+        'links'           => $links,
+    );
+
+    $reportList = $CI->parser->parse('report/purchase_report', $data, true);
+    return $reportList;
+}
+
 
 	//Retrive date wise purchase report
 	public function retrieve_dateWise_PurchaseReports($start_date,$end_date)
@@ -373,6 +382,7 @@ public function todays_sales_report($links=null, $per_page=null, $page=null)
 			foreach($purchase_report as $k=>$v){$i++;
 			    $purchase_report[$k]['sl']=$i;
 			    $purchase_report[$k]['prchse_date'] = $CI->occational->dateConvert($purchase_report[$k]['purchase_date']);
+				$purchase_report[$k]['stock_name'] = $purchase_report[$k]['stock_name'];
 				$purchase_amount = $purchase_amount+$purchase_report[$k]['grand_total_amount'];
 			}
 		}
@@ -383,6 +393,7 @@ public function todays_sales_report($links=null, $per_page=null, $page=null)
 				'purchase_amount'=>  $purchase_amount,
 				'purchase_report'=> $purchase_report,
 				'company_info' 	=> $company_info,
+				'stock_name' 	=> $stock_name,
 				'currency' 		=> $currency_details[0]['currency'],
 				'position' 		=> $currency_details[0]['currency_position'],
 				'links' 		=> '',
@@ -393,7 +404,7 @@ public function todays_sales_report($links=null, $per_page=null, $page=null)
 	}
 	//Product report sales wise
 	public function get_products_report_sales_view($links,$per_page,$page)
-	{
+	 {
 		$CI =& get_instance();
 		$CI->load->model('Reports');
 		$CI->load->model('Web_settings');
@@ -411,6 +422,7 @@ public function todays_sales_report($links=null, $per_page=null, $page=null)
 			foreach($product_report as $k=>$v){
 			    $product_report[$k]['sales_date'] = $CI->occational->dateConvert($product_report[$k]['date']);
 				$sub_total +=$product_report[$k]['total_amount'];
+				$product_report[$k]['stock_name'] = $product_report[$k]['stock_name']; 
 			}
 		}
 		$currency_details = $CI->Web_settings->retrieve_setting_editdata();
@@ -423,6 +435,7 @@ public function todays_sales_report($links=null, $per_page=null, $page=null)
 				'start'          => date('Y-m-d'),
 				'end'            => date('Y-m-d'),
 				'company_info'   => $company_info,
+				'stock_name'   => $stock_name,
 				'currency' 	     => $currency_details[0]['currency'],
 				'position' 	     => $currency_details[0]['currency_position'],
 			);
@@ -470,7 +483,7 @@ public function get_total_payment() {
 
 	//Get Product Report Search
 	public function get_products_search_report( $from_date,$to_date )
-	{
+	 {
 		$CI =& get_instance();
 		$CI->load->model('Reports');
 		$CI->load->model('Web_settings');
@@ -488,6 +501,7 @@ public function get_total_payment() {
 			foreach($product_report as $k=>$v){
 			    $product_report[$k]['sales_date'] = $CI->occational->dateConvert($product_report[$k]['date']);
 				$sub_total = $sub_total+$product_report[$k]['total_price'];
+				$product_report[$k]['sales_date'] = $CI->occational->dateConvert($v['date']);
 			}
 		}
 		$currency_details = $CI->Web_settings->retrieve_setting_editdata();
@@ -496,6 +510,7 @@ public function get_total_payment() {
 				'title' 	     => display('sales_report_product_wise'),
 				'sub_total'      =>  number_format($sub_total, 2, '.', ','),
 				'product_report' => $product_report,
+				'stock_name' => $stock_name,
 				'links' 	     => '',
 				'start'          => $from_date,
 				'end'            => $to_date,
@@ -714,5 +729,106 @@ public function get_total_payment() {
 		$reportList = $CI->parser->parse('report/productwise_profit_view',$data,true);
 		return $reportList;
 	}
+	// stock add form
+	public function stock_add_form(){
+		
+		$CI =& get_instance();
+		$CI->load->model('Stocks');
+		$CI->load->model('Web_settings');
+		$all_users = $CI->Stocks->select_all_users();
+		$data = array(
+				'title' 		=> display('create_stock'),
+				'all_users' 	=> $all_users,
+			);
+		$stockForm = $CI->parser->parse('stock/add_stock_form',$data,true);
+		return $stockForm;
+
+	}
+	//stock transfer form
+	public function stock_transfer_form(){
+		$CI =& get_instance();
+		$CI->load->model('Stocks');
+		$user_id = $CI->session->userdata('user_id');
+		//$user_id = $CI->session->userdata('user_id');
+		// ✅ Load only stocks assigned to this user
+		$all_stock = $CI->Stocks->get_stocks_assigned_to_user($user_id);
+		$to_stocks= $CI->Stocks->get_all_stocks();
+		$CI->load->model('Web_settings');
+		
+		$data = array(
+				'title' 		=> display('stock_transfer'),
+				'all_stock' 	=> $all_stock,
+				'to_stocks'    =>$to_stocks,
+			);
+		$stockForm = $CI->parser->parse('stock/stock_transfer_form',$data,true);
+		return $stockForm;
+
+	}
+
+	public function stock_list() {
+
+        $CI = & get_instance();
+        $CI->load->model('Stocks');
+        $CI->load->model('Web_settings');
+        $CI->load->library('occational');
+        $data = array(
+            'title'         => display('manage_stock'),
+            
+        );
+        $stockList = $CI->parser->parse('stock/manage_stock', $data, true);
+        return $stockList;
+    }
+	public function stock_update_form($id)
+{
+    $CI =& get_instance();
+    $CI->load->model('Stocks');
+    $CI->load->model('Users');
+
+    $stock_detail = $CI->Stocks->retrieve_stock_editdata($id);
+    $all_users = $CI->Users->get_all_users();
+
+    if (!empty($stock_detail)) {
+        $stock = $stock_detail[0];
+
+        $data = array(
+            'title'         => display('stock_edit'),
+            'id'            => $stock['id'],
+            'stock_name'    => $stock['stock_name'],
+            'stock_address' => $stock['address'],
+            'assign_users'  => $stock['assign_users'], // array of assigned user IDs
+            'all_users'     => $all_users
+        );
+
+        $chapterList = $CI->parser->parse('stock/update_stock_form', $data, true);
+        return $chapterList;
+    } else {
+        return "Stock not found!";
+    }
+}
+public function stock_transfer_history() {
+    $CI =& get_instance();
+    $CI->load->model('Stocks');
+    $CI->load->library('occational');
+    $CI->load->model('Web_settings');
+
+    // Fetch all stock transfers
+    $transfers = $CI->Stocks->get_all_stock_transfers();
+	$recevied = $CI->Stocks->get_all_stock_recevied();
+
+    // Pass data to the view
+    $data = array(
+        'title'     => display('stock_transfer_history'),
+        'transfers' => $transfers,
+		'recevied' => $recevied
+		
+    );
+
+    // Load view with standard PHP
+    $productList = $CI->load->view('stock/stock_transfer_history', $data, true);
+    return $productList;
+}
+
+
+
 }
 ?>

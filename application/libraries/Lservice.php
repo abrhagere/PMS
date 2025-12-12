@@ -142,7 +142,7 @@ class Lservice {
             'taxvalu'       => $taxinfo,
             'discount_type' => $currency_details[0]['discount_type'],
             'taxes'         => $taxfield,
-            'stotal'        => $service_inv_main[0]['total_amount']-$service_inv_main[0]['previous'],
+            'stotal'        => $service_inv_main[0]['total_amount'],
             'employees'    => $service_inv_main[0]['employee_id'],
             'previous'     => $service_inv_main[0]['previous'],
 

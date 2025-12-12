@@ -104,18 +104,24 @@ return $this->db->insert('designation',$data);
 
    }
    // Employee list
-   public function employee_list(){
-       $this->db->select('a.*,b.designation');
-        $this->db->from('employee_history a');
-        $this->db->join('designation b','a.designation = b.id');
-        $this->db->order_by('a.id', 'DESC');
-        $query = $this->db->get();
+   public function employee_list() {
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
 
-        if ($query->num_rows() > 0) {
-            return $query->result_array();
-        }
-        return false;
-   }
+    $this->db->select('a.*, b.designation, s.stock_name');
+    $this->db->from('employee_history a');
+    $this->db->join('designation b', 'a.designation = b.id', 'left');
+    $this->db->join('stock s', 's.id = a.stock_id', 'left');
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+    $this->db->order_by('a.id', 'DESC');
+
+    $query = $this->db->get();
+    if ($query->num_rows() > 0) {
+        return $query->result_array();
+    }
+    return [];
+}
+
    // Employee Edit data
    public function employee_editdata($id){
         $this->db->select('*');

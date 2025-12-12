@@ -32,7 +32,10 @@
 		                        <thead>
 									<tr>
 										<th class="text-center"><?php echo display('sl') ?></th>
+										<th class="text-center"><?php echo display('stock_name') ?></th>
 										<th class="text-center"><?php echo display('product_name') ?></th>
+										<th class="text-center"><?php echo display('batch_id') ?></th>
+										<th class="text-center"><?php echo display('invoice_id') ?></th>
 											<th class="text-center"><?php echo display('manufacturer_name') ?></th>
 	
 										<th class="text-center"><?php echo display('generic_name') ?></th>
@@ -96,7 +99,10 @@ $(document).ready(function() {
             },
           'columns': [
              { data: 'sl' },
+			 { data: 'stock_name' },
              { data: 'product_name' },
+			 { data: 'batch_id' },
+			 { data: 'invoice_id' },
              { data: 'manufacturer_name' },
              { data: 'generic_name'},
              { data: 'stock'},

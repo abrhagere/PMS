@@ -1,337 +1,246 @@
 <!-- Product details page start -->
 <div class="content-wrapper">
-	<section class="content-header">
-	    <div class="header-icon">
-	        <i class="pe-7s-note2"></i>
-	    </div>
-	    <div class="header-title">
-	        <h1><?php echo display('product_report') ?></h1>
-	        <small><?php echo display('product_sales_and_purchase_report') ?></small>
-	        <ol class="breadcrumb">
-	            <li><a href="#"><i class="pe-7s-home"></i> <?php echo display('home') ?></a></li>
-	            <li><a href="#"><?php echo display('report') ?></a></li>
-	            <li class="active"><?php echo display('product_report') ?></li>
-	        </ol>
-	    </div>
-	</section>
+    <section class="content-header">
+        <div class="header-icon">
+            <i class="pe-7s-note2"></i>
+        </div>
+        <div class="header-title">
+            <h1><?php echo display('product_report'); ?></h1>
+            <small><?php echo display('product_sales_and_purchase_report'); ?></small>
+            <ol class="breadcrumb">
+                <li><a href="#"><i class="pe-7s-home"></i> <?php echo display('home'); ?></a></li>
+                <li><a href="#"><?php echo display('report'); ?></a></li>
+                <li class="active"><?php echo display('product_report'); ?></li>
+            </ol>
+        </div>
+    </section>
 
-	<section class="content">
+    <section class="content">
 
-		<!-- Alert Message -->
-	    <?php
-	        $message = $this->session->userdata('message');
-	        if (isset($message)) {
-	    ?>
-	    <div class="alert alert-info alert-dismissable">
-	        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-	        <?php echo $message ?>
-	    </div>
-	    <?php
-	        $this->session->unset_userdata('message');
-	        }
-	        $error_message = $this->session->userdata('error_message');
-	        if (isset($error_message)) {
-	    ?>
-	    <div class="alert alert-danger alert-dismissable">
-	        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-	        <?php echo $error_message ?>
-	    </div>
-	    <?php
-	        $this->session->unset_userdata('error_message');
-	        }
-	    ?>
+        <!-- Alert Message -->
+        <?php if ($message = $this->session->userdata('message')): ?>
+            <div class="alert alert-info alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert">×</button>
+                <?= $message ?>
+            </div>
+            <?php $this->session->unset_userdata('message'); ?>
+        <?php endif; ?>
 
-	    <div class="row">
+        <?php if ($error_message = $this->session->userdata('error_message')): ?>
+            <div class="alert alert-danger alert-dismissable">
+                <button type="button" class="close" data-dismiss="alert">×</button>
+                <?= $error_message ?>
+            </div>
+            <?php $this->session->unset_userdata('error_message'); ?>
+        <?php endif; ?>
+
+        <!-- Action Buttons -->
+        <div class="row">
             <div class="col-sm-12">
                 <div class="column">
-
-                  <a href="<?php echo base_url('Cproduct')?>" class="btn btn-info m-b-5 m-r-2"><i class="ti-plus"> </i> <?php echo display('add_product')?> </a>
-
-                  <a href="<?php echo base_url('Cproduct/add_product_csv')?>" class="btn btn-success m-b-5 m-r-2"><i class="ti-plus"> </i> <?php echo display('add_product_csv')?> </a>
-
-                  <a href="<?php echo base_url('Cproduct/manage_product')?>" class="btn btn-primary m-b-5 m-r-2"><i class="ti-align-justify"> </i>  <?php echo display('manage_product')?> </a>
-
+                    <a href="<?= base_url('Cproduct') ?>" class="btn btn-info m-b-5 m-r-2"><i class="ti-plus"></i> <?= display('add_product') ?></a>
+                    <a href="<?= base_url('Cproduct/add_product_csv') ?>" class="btn btn-success m-b-5 m-r-2"><i class="ti-plus"></i> <?= display('add_product_csv') ?></a>
+                    <a href="<?= base_url('Cproduct/manage_product') ?>" class="btn btn-primary m-b-5 m-r-2"><i class="ti-align-justify"></i> <?= display('manage_product') ?></a>
                 </div>
             </div>
         </div>
 
+        <?php if ($this->permission1->method('manage_medicine','read')->access()): ?>
 
-        <?php
-        if($this->permission1->method('manage_medicine','read')->access() ) { ?>
-		<div class="row">
-		    <div class="col-sm-12">
-		        <div class="panel panel-bd lobidrag">
-		            <div class="panel-heading">
-		                <div class="panel-title">
-		                    <h4><?php echo display('product_details') ?> </h4>
-		                </div>
-		            </div>
-		            <div class="panel-body">
-						<h2> <span style="font-weight:normal;"><?php echo display('product_name') ?>: </span><span style="color:#005580;">{product_name}</span></h2>
-						<h4> <span style="font-weight:normal;"><?php echo display('model') ?>:</span> <span style="color:#005580;">{product_model}</span></h4>
-						<h4> <span style="font-weight:normal;"><?php echo display('price') ?>:</span> <span style="color:#005580;">
-						<?php echo (($position==0)?"$currency {price}":"{price} $currency") ?></span></h4>
-						<table class="table">
-							<tr>
-								<th><?php echo display('total_purchase') ?> = <span style="color:#ff0000;">{total_purchase}</span></th>
-								<th><?php echo display('total_sales') ?> = <span style="color:#ff0000;"> {total_sales}</span></th>
-								<th><?php echo display('stock') ?> = <span style="color:#ff0000;"> {stock}</span></th>
-							</tr>
-						</table>
-		            </div>
-		        </div>
-		    </div>
-		 </div>
+        <!-- Product Details -->
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-bd lobidrag">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <h4><?= display('product_details'); ?></h4>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <h2><span style="font-weight:normal;"><?= display('product_name') ?>: </span><span style="color:#005580;"><?= $product_name ?? '' ?></span></h2>
+                        <h4><span style="font-weight:normal;"><?= display('model') ?>:</span> <span style="color:#005580;"><?= $product_model ?? '' ?></span></h4>
+                        <table class="table">
+                            <tr>
+                                <th><?= display('total_purchase') ?> = <span style="color:#ff0000;"><?= $total_purchase ?? '0' ?></span></th>
+                                <th><?= display('total_sales') ?> = <span style="color:#ff0000;"><?= $total_sales ?? '0' ?></span></th>
+                                <th><?= display('stock') ?> = <span style="color:#ff0000;"><?= $stock ?? '0' ?></span></th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-		<!-- Total Purchase report -->
-		<div class="row">
-		    <div class="col-sm-12">
-		        <div class="panel panel-bd lobidrag">
-		            <div class="panel-heading">
-		                <div class="panel-title">
-		                    <h4><?php echo display('purchase_report') ?> </h4>
-		                </div>
-		            </div>
-		            <div class="panel-body">
-		                <div class="table-responsive">
-		                    <table id="dataTableExample2" class="table table-bordered table-striped table-hover">
-				            	<thead>
-									<tr>
-										<th><?php echo display('date') ?></th>
-										<th><?php echo display('invoice_no') ?></th>
-											<th><?php echo display('invoice_id') ?></th>
-										<th><?php echo display('manufacturer_name') ?></th>
-										<th><?php echo display('quantity') ?></th>
-									<th><?php echo display('purchase_price') ?></th>
-										<th style="text-align:right;"><?php echo display('total_ammount') ?></th>
-									</tr>
-								</thead>
-								<tbody>
-								<?php
-									if ($purchaseData) {
-								?>
-								{purchaseData}
-									<tr>
-										<td>{final_date}</td>
-										<td>
-											<a href="<?php echo base_url().'Cpurchase/purchase_details_data/{purchase_id}'; ?>">
-												{chalan_no}
-											</a>
-										</td>
-											<td>
-											<a href="<?php echo base_url().'Cpurchase/purchase_details_data/{purchase_id}'; ?>">
-												{purchase_id}
-											</a>
-										</td>
-										<td>
-											<a href="<?php echo base_url().'Cmanufacturer/manufacturer_details/{manufacturer_id}'; ?>">{manufacturer_name}</a>
-										</td>
-										<td  style="text-align:right;">{quantity}</td>
-										<td  style="text-align:right;"><?php echo (($position==0)?"$currency {rate}":"{rate} $currency") ?></td>
-										<td style="text-align:right;"> <?php echo (($position==0)?"$currency {total_amount}":"{total_amount} $currency") ?></td>
-									</tr>
-								{/purchaseData}
-								<?php
-									}
-								?>
-								</tbody>
-								<tfoot>
-									<tr>
-										<td colspan="3" style="text-align:right;"><b><?php echo display('total') ?></b></td>
-										<td></td>
-										<td  style="text-align:right;"> {total_purchase}</td>
-										<td style="text-align:right;"><b><?php echo display('grand_total') ?></b></td>
-										<td style="text-align:right;"><b> <?php echo (($position==0)?"$currency {purchaseTotalAmount}":"{purchaseTotalAmount} $currency") ?></b></td>
-									</tr>
-								</tfoot>
-		                    </table>
-		                </div>
-		            </div>
-		        </div>
-		    </div>
-		</div>
+        <!-- Purchase Report -->
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-bd lobidrag">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <h4><?= display('purchase_report'); ?></h4>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table id="purchaseTable" class="table table-bordered table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th><?= display('date'); ?></th>
+                                        <th><?= display('invoice_no'); ?></th>
+                                        <th><?= display('invoice_id'); ?></th>
+                                        <th><?= display('stock_name'); ?></th>
+                                        <th><?= display('manufacturer_name'); ?></th>
+                                        <th><?= display('quantity'); ?></th>
+                                        <th><?= display('purchase_price'); ?></th>
+                                        <th style="text-align:right;"><?= display('total_ammount'); ?></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($purchaseData)): ?>
+                                        <?php foreach ($purchaseData as $purchase): ?>
+                                            <tr>
+                                                <td><?= $purchase['final_date']; ?></td>
+                                                <td><a href="<?= base_url("Cpurchase/purchase_details_data/{$purchase['purchase_id']}") ?>"><?= $purchase['chalan_no'] ?></a></td>
+                                                <td><a href="<?= base_url("Cpurchase/purchase_details_data/{$purchase['purchase_id']}") ?>"><?= $purchase['purchase_id'] ?></a></td>
+                                                <td><?= $purchase['stock_name'] ?></td>
+                                                <td><a href="<?= base_url("Cmanufacturer/manufacturer_details/{$purchase['manufacturer_id']}") ?>"><?= $purchase['manufacturer_name'] ?></a></td>
+                                                <td style="text-align:right;"><?= $purchase['quantity'] ?></td>
+                                                <td style="text-align:right;"><?= ($position==0?"$currency {$purchase['rate']}":"{$purchase['rate']} $currency") ?></td>
+                                                <td style="text-align:right;"><?= ($position==0?"$currency {$purchase['total_amount']}":"{$purchase['total_amount']} $currency") ?></td>
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="5" style="text-align:right;"><b><?= display('total'); ?></b></th>
+                                        <th style="text-align:right;"></th>
+                                        <th style="text-align:right;"></th>
+                                        <th style="text-align:right;"></th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-		<!--Total sales report -->
-		<div class="row">
-		    <div class="col-sm-12">
-		        <div class="panel panel-bd lobidrag">
-		            <div class="panel-heading">
-		                <div class="panel-title">
-		                    <h4><?php echo display('sales_report') ?> </h4>
-		                </div>
-		            </div>
-		            <div class="panel-body">
-		                <div class="table-responsive">
-		                    <table id="dataTableExample5" class="table table-bordered table-striped table-hover">
-		             			<thead>
-									<tr>
-										<th><?php echo display('date') ?></th>
-										<th><?php echo display('invoice_id') ?></th>
-										<th><?php echo display('invoice_no') ?></th>
-										<th><?php echo display('customer_name') ?></th>
-										<th><?php echo display('quantity') ?></th>
-										<th><?php echo display('rate') ?></th>
-										<th><?php echo display('paid_amount') ?></th>
-										<th><?php echo display('due') ?></th>
-										<td><?php echo display('manufacturer_rate') ?></td>
-										<th style="text-align:right;"><?php echo display('total_ammount') ?></th>
-										<td><?php echo display('grand_profit') ?></td>
-										<td><?php echo display('paid_profit') ?></td>
-									</tr>
-								</thead>
-								<tbody>
-								<?php
-									if ($salesData) {
-								?>
-								{salesData}
-									<tr>
-										<td>{final_date}</td>
-										<td>
-											<a href="<?php echo base_url().'Cinvoice/invoice_inserted_data/{invoice_id}'; ?>">
-												{invoice_id}
-											</a>
-										</td>
-											<td>
-											<a href="<?php echo base_url().'Cinvoice/invoice_inserted_data/{invoice_id}'; ?>">
-												{invoice}
-											</a>
-										</td>
-										<td>
-											<a href="<?php echo base_url().'Ccustomer/customer_ledger/{customer_id}'; ?>">{customer_name}</a>
-										</td>
-										<td  style="text-align:right;">{quantity}</td>
-										<td  style="text-align:right;"> <?php echo (($position==0)?"$currency {rate}":"{rate} $currency") ?></td>
-										<td style="text-align:right;">
-                                        <?php echo (($position == 0) ? "$currency {paid_amount}" : "{paid_amount} $currency"); ?>
-                                    </td>
-									<td style="text-align:right;">
-  <?php echo (($position == 0) ? "$currency {due_amount}" : "{due_amount} $currency"); ?>
-</td>
-<td style="text-align:right;">
-  <?php echo (($position == 0) ? "$currency {manufacturer_price_formatted}" : "{manufacturer_price_formatted} $currency"); ?>
-</td>
+        <!-- Sales Report -->
+        <div class="row">
+            <div class="col-sm-12">
+                <div class="panel panel-bd lobidrag">
+                    <div class="panel-heading">
+                        <div class="panel-title">
+                            <h4><?= display('sales_report'); ?></h4>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table id="salesTable" class="table table-bordered table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th><?= display('date'); ?></th>
+                                        <th><?= display('invoice_id'); ?></th>
+                                        <th><?= display('invoice_no'); ?></th>
+                                        <th><?= display('stock_name'); ?></th>
+                                        <th><?= display('customer_name'); ?></th>
+                                        <th><?= display('quantity'); ?></th>
+                                        <th><?= display('rate'); ?></th>
+                                        <th><?= display('manufacturer_rate'); ?></th>
+                                        <th style="text-align:right;"><?= display('total_ammount'); ?></th>
+                                        <th><?= display('grand_profit'); ?></th>
+                                         <th><?= display('sales_by'); ?></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php if (!empty($salesData)): ?>
+                                        <?php foreach ($salesData as $sale): ?>
+                                            <tr>
+                                                <td><?= $sale['final_date'] ?></td>
+                                                <td><a href="<?= base_url("Cinvoice/invoice_inserted_data/{$sale['invoice_id']}") ?>"><?= $sale['invoice_id'] ?></a></td>
+                                                <td><a href="<?= base_url("Cinvoice/invoice_inserted_data/{$sale['invoice_id']}") ?>"><?= $sale['invoice'] ?></a></td>
+                                                <td><?= $sale['stock_name'] ?></td>
+                                                <td><a href="<?= base_url("Ccustomer/customer_ledger/{$sale['customer_id']}") ?>"><?= $sale['customer_name'] ?></a></td>
+                                                <td style="text-align:right;"><?= $sale['quantity'] ?></td>
+                                                <td style="text-align:right;"><?= ($position==0?"$currency {$sale['rate']}":"{$sale['rate']} $currency") ?></td>
+                                                <td style="text-align:right;"><?= ($position==0?"$currency {$sale['manufacturer_price_formatted']}":"{$sale['manufacturer_price_formatted']} $currency") ?></td>
+                                                <td style="text-align:right;"><?= ($position==0?"$currency {$sale['total_price']}":"{$sale['total_price']} $currency") ?></td>
+                                                <td style="text-align:right;"><?= ($position==0?"$currency {$sale['grand_profit']}":"{$sale['grand_profit']} $currency") ?></td>
+                                                <td style="text-align:left;"><?= !empty($sale['sale_by']) ? $sale['sale_by'] : '-' ?></td>
 
+                                                
+                                            </tr>
+                                        <?php endforeach; ?>
+                                    <?php endif; ?>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="5" style="text-align:right;"><?= display('total'); ?></th>
+                                        <th style="text-align:right;"></th>
+                                        <th style="text-align:right;"></th>
+                                        <th style="text-align:right;"></th>
+                                        <th style="text-align:right;"></th>
+                                        <th style="text-align:left;" colspan="2"></th>
+                                       
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-
-
-
-										<td style="text-align:right;"> <?php echo (($position==0)?"$currency {total_price}":"{total_price} $currency") ?></td>
-										<td style="text-align:right;">
-  <?php echo (($position == 0) ? "$currency {grand_profit}" : "{grand_profit} $currency"); ?>
-</td>
-<td style="text-align:right;">
-  <?php echo (($position == 0) ? "$currency {paid_profit}" : "{paid_profit} $currency"); ?>
-</td>
-
-									</tr>
-								{/salesData}
-								<?php
-									}
-								?>
-								</tbody>
-								<tfoot>
-									<tr>
-										<td colspan="4" style="text-align:right;"><b><?php echo display('total') ?></b></td>
-										
-										<td  style="text-align:right;">{total_sales}</td>
-										
-										<td>#</td>
-										<td>#</td>
-										<td>#</td>
-										<td>#</td>
-										<td  style="text-align:right;"><b> <?php echo (($position==0)?"$currency {salesTotalAmount}":"{salesTotalAmount} $currency") ?></b></td>
-										<td style="text-align:right;"><b><?php echo (($position == 0) ? "$currency {totalGrandProfit}" : "{totalGrandProfit} $currency"); ?></b></td>
-        <td style="text-align:right;"><b><?php echo (($position == 0) ? "$currency {totalPaidProfit}" : "{totalPaidProfit} $currency"); ?></b></td>
-									</tr>
-								</tfoot>
-		                    </table>
-		                </div>
-		            </div>
-		        </div>
-		    </div>
-		</div>
-        <?php
-        }else{
-            ?>
+        <?php else: ?>
             <div class="row">
                 <div class="col-sm-12">
                     <div class="panel panel-bd lobidrag">
                         <div class="panel-heading">
                             <div class="panel-title">
-                                <h4><?php echo display('You do not have permission to access. Please contact with administrator.');?></h4>
+                                <h4><?= display('You do not have permission to access. Please contact with administrator.'); ?></h4>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        <?php
-        }
-        ?>
-	</section>
+        <?php endif; ?>
+
+    </section>
 </div>
+
+<!-- DataTables Scripts -->
 <script>
+function parseValue(i) {
+    if (typeof i === 'string') i = i.replace(/[^0-9.\-]+/g,'');
+    var f = parseFloat(i);
+    return isNaN(f) ? 0 : f;
+}
+
 $(document).ready(function() {
-    $('#dataTableExample2').DataTable({
-        "footerCallback": function (row, data, start, end, display) {
+    $('#purchaseTable').DataTable({
+        "footerCallback": function(row, data, start, end, display){
             var api = this.api();
-
-            // Function to parse string numbers (remove commas, currency symbols)
-            var parseValue = function(i) {
-                if (typeof i === 'string') {
-                    i = i.replace(/[^0-9.\-]+/g, '');
-                }
-                var f = parseFloat(i);
-                return isNaN(f) ? 0 : f;
-            };
-
-            // Change 6 below to the correct 0-based index of your total_amount or total_sales column
-            var total = api
-                .column(6, { page: 'current' })  // only visible rows after filtering/pagination
-                .data()
-                .reduce(function(a, b) {
-                    return parseValue(a) + parseValue(b);
+            [5,6,7].forEach(function(idx){
+                var total = api.column(idx, {page:'current'}).data().reduce(function(a,b){
+                    return parseValue(a)+parseValue(b);
                 }, 0);
+                $(api.column(idx).footer()).html(total.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2}));
+            });
+        }
+    });
 
-            // Update footer cell for that column
-            $(api.column(6).footer()).html(
-                total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-            );
+    $('#salesTable').DataTable({
+        "footerCallback": function(row, data, start, end, display){
+            var api = this.api();
+            [5,6,7,8,9].forEach(function(idx){
+                var total = api.column(idx, {page:'current'}).data().reduce(function(a,b){
+                    return parseValue(a)+parseValue(b);
+                }, 0);
+                $(api.column(idx).footer()).html(total.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2}));
+            });
         }
     });
 });
-
 </script>
-<script>
-	$(document).ready(function() {
-    $('#dataTableExample5').DataTable({
-        "footerCallback": function(row, data, start, end, display) {
-            var api = this.api();
-
-            // Parse numbers by removing currency and commas
-            var parseValue = function(i) {
-                if (typeof i === 'string') {
-                    i = i.replace(/[^0-9.\-]+/g, '');
-                }
-                var f = parseFloat(i);
-                return isNaN(f) ? 0 : f;
-            };
-
-            // Sum total_price column for visible rows (after filtering)
-            var totalPriceSum = api
-                .column(6, { page: 'current' })
-                .data()
-                .reduce(function(a, b) {
-                    return parseValue(a) + parseValue(b);
-                }, 0);
-
-            // Update footer cell for total_price column
-            $(api.column(6).footer()).html(
-                totalPriceSum.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-            );
-        }
-    });
-});
-
-</script>
-
 <!-- Product details page end -->

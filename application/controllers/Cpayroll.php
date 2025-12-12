@@ -159,6 +159,7 @@ class Cpayroll extends CI_Controller {
     public function manage_salary_setup(){
         $this->load->model('Payroll_model');
       $data['title']            = display('manage_salary_setup');
+       $data['stock_name']            = $stock_name;
       $data['emp_sl_setup']     = $this->Payroll_model->salary_setupindex();
       $content                  = $this->parser->parse('payroll/manage_salary_setup', $data, true);
      $this->template->full_admin_html_view($content);    
@@ -211,15 +212,29 @@ class Cpayroll extends CI_Controller {
     // Salary Generate 
     public function salary_generate_form(){
       $this->load->model('Payroll_model');
+      $CI =& get_instance(); // Add this
+      $CI->load->model('Stocks');
+		$user_id = $CI->session->userdata('user_id');
+		//$user_id = $CI->session->userdata('user_id');
+		// ✅ Load only stocks assigned to this user
+		$all_stock = $CI->Stocks->get_stocks_assigned_to_user($user_id);
     $data['title']       = display('salary_generate');
+    $data['all_stock']    = $all_stock;
     $content             = $this->parser->parse('payroll/salary_generate_form', $data, true);
      $this->template->full_admin_html_view($content);   
     }
     // Entry salary generate
     public function create_salary_generate(){
+        $stock_id = $this->input->post('stock_name');
+        $myDate   = $this->input->post('myDate');
      $employee = $this->db->select('employee_id')->from('employee_salary_setup')->group_by('employee_id')->get()->result();
      list($month,$year) = explode(' ',$this->input->post('myDate'));
-        $query =$this->db->select('*')->from('salary_sheet_generate')->where('gdate',$this->input->post('myDate'))->get()->num_rows();
+        $query = $this->db
+    ->from('salary_sheet_generate')
+    ->where('gdate', $myDate)
+    ->where('stock_id', $stock_id) // add stock filter
+    ->get()
+    ->num_rows();
                 if ($query > 0) {
             $this->session->set_userdata(array('error_message' => display('the_salary_of').$month. display('already_generated')));
             redirect(base_url('Cpayroll/salary_generate_form'));
@@ -271,6 +286,7 @@ class Cpayroll extends CI_Controller {
             $ab=$this->input->post('myDate');
            
             $postData = [
+                'stock_id'                =>  $stock_id,
                 'name'                =>  null,
                 'gdate'               =>  $ab,
                 'start_date'          =>  $fdate, 
@@ -363,6 +379,7 @@ class Cpayroll extends CI_Controller {
     //manage Salary Generate
     public function manage_salary_generate(){
         $data['title']  = display('salary_generate');
+         $data['stock_name']  = $stock_name;
         $config["base_url"] = base_url('Cpayroll/manage_salary_generate');
         $config["total_rows"]  = $this->db->count_all('salary_sheet_generate');
         $config["per_page"]    = 20;
@@ -408,8 +425,16 @@ class Cpayroll extends CI_Controller {
     }
     // Employee Salary Payment
         public function salary_payment(){
+              $from_date = $this->input->post('from_date');
+    $to_date   = $this->input->post('to_date');
+     // Check if it's an AJAX request
+    if($this->input->is_ajax_request()) {
+        $data = $this->Payroll_model->get_salary_payments($from_date, $to_date);
+        echo json_encode($data);
+        return; // stop further output
+    }
         $data['title']  = display('employee_salary_payment');
-
+$data['stock_name']  = $stock_name;
 $config["base_url"]    = base_url('Cpayroll/salary_payment');
 $config["total_rows"]  = $this->db->count_all('employee_salary_payment');
 $config["per_page"]    = 20;

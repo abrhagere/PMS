@@ -109,6 +109,7 @@ echo $ab[0]['id'] ;
     <table class="table table-striped" width="100%">
     <tr>
         <th> <?php echo display('sl') ?></th>
+        <th> <?php echo display('stock_name') ?></th>
         <th> <?php echo display('date') ?></th>
         <th> <?php echo display('checkin') ?></th>
         <th> <?php echo display('checkout') ?></th>
@@ -119,6 +120,7 @@ echo $ab[0]['id'] ;
     foreach($query as $qr){?>
     <tr>
         <td><?php echo $x++;?></td>
+        <td><?php echo $qr->stock_name?></td>
         <td><?php echo $qr->date?></td>
           <td><?php echo $qr->sign_in?></td>
           <td><?php echo $qr->sign_out?></td>

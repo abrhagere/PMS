@@ -169,7 +169,266 @@ public function CheckExpireList(){
         $data = $this->Reports->getCheckBatchStock($postData);
         echo json_encode($data);
     } 
+// create stock
+public function create_stock(){
+    $CI =& get_instance();
+	$CI->auth->check_admin_auth();
+	$CI->load->library('lreport');
+	$content = $CI->lreport->stock_add_form();
+	$this->template->full_admin_html_view($content);
 
-    
+}
+//insert stock
+public function insert_stock()
+{
+    $this->load->library('form_validation');
+    $this->form_validation->set_rules('stock_name', 'Stock Name', 'required');
+
+    if ($this->form_validation->run() == FALSE) {
+        $this->session->set_flashdata('error', validation_errors());
+        redirect('Creport/insert_stock');
+    } else {
+        $this->load->model('Stocks');
+
+        // Collect basic data
+        $data = array(
+            'stock_name' => $this->input->post('stock_name', TRUE),
+            'address'    => $this->input->post('stock_address', TRUE),
+            'created_at' => date('Y-m-d H:i:s'),
+        );
+
+        // Handle assigned users as JSON
+        $user_ids = $this->input->post('user_id'); // expects array
+        if (!empty($user_ids)) {
+            $data['assign_users'] = json_encode($user_ids);
+        } else {
+            $data['assign_users'] = json_encode([]);
+        }
+        // Insert into DB
+        $this->Stocks->insert_stock($data);
+
+        $this->session->set_flashdata('message', 'Stock added successfully!');
+        redirect('Creport/manage_stock');
+    }
+}
+
+
+// manage stock
+
+     public function manage_stock() {
+        $CI = & get_instance();
+        $this->auth->check_admin_auth();
+        $CI->load->library('lreport');
+        $CI->load->model('Stocks');
+        $content = $this->lreport->stock_list();
+        $this->template->full_admin_html_view($content);
+    }
+      public function CheckStockList(){
+        // GET data
+        $this->load->model('Stocks');
+        $postData = $this->input->post();
+        $data = $this->Stocks->getStockList($postData);
+        echo json_encode($data);
+    } 
+   
+      public function stock_update_form($id)
+	{	
+		$CI =& get_instance();
+		$CI->auth->check_admin_auth();
+		$CI->load->library('lreport');
+		 //$CI->permission1->method('invoice','update')->redirect();
+		$content = $CI->lreport->stock_update_form($id);
+		$this->template->full_admin_html_view($content);
+	}
+    public function update_stock($id = null)
+{
+    $this->load->library('form_validation');
+
+    // Validation rules
+    $this->form_validation->set_rules('stock_name', 'Stock Name', 'required|trim');
+    $this->form_validation->set_rules('address', 'Address', 'trim');
+    $this->form_validation->set_rules('user_id[]', 'Assign Users', 'required');
+
+    if ($this->form_validation->run() === true) {
+        $data = array(
+            'stock_name'   => $this->input->post('stock_name', true),
+            'address'      => $this->input->post('stock_address', true),
+            'assign_users' => json_encode($this->input->post('user_id')), // store as JSON
+            'created_at'   => date('Y-m-d H:i:s') // optional if you want to update timestamp
+        );
+
+        $this->db->where('id', $id);
+        $update = $this->db->update('stock', $data);
+
+        if ($update) {
+            $this->session->set_flashdata('message', 'Stock updated successfully');
+        } else {
+            $this->session->set_flashdata('error', 'Failed to update stock');
+        }
+
+        redirect('Creport/manage_stock'); // replace with your listing page
+    } else {
+        // Reload the form with current data if validation fails
+        $data['stock_name']    = $this->input->post('stock_name');
+        $data['address']       = $this->input->post('address');
+        $data['assign_users']  = $this->input->post('user_id');
+        $data['all_users']     = $this->get_all_users();
+        $data['id']            = $id;
+
+        $this->load->view('update_stock_form', $data);
+    }
+}
+
+
+public function stock_delete($id)
+{
+    // Delete the stock record
+    $this->db->where('id', $id);
+    $delete = $this->db->delete('stock');
+
+    if ($delete) {
+        $this->session->set_flashdata('success', 'Stock deleted successfully.');
+    } else {
+        $this->session->set_flashdata('error', 'Failed to delete stock.');
+    }
+
+    redirect('Creport/manage_stock'); // redirect to stock list
+}
+
+public function stock_transfer(){
+      $CI =& get_instance();
+	$CI->auth->check_admin_auth();
+	$CI->load->library('lreport');
+	$content = $CI->lreport->stock_transfer_form();
+	$this->template->full_admin_html_view($content);
+
+}
+
+     public function fetch_products() {
+    $stock_id = $this->input->post('stock_id'); // Get POST data
+    $this->load->model('Stocks');
+    $products = $this->Stocks->get_products_by_stock($stock_id);
+    echo json_encode($products);
+}
+public function fetch_batches() {
+    $product_id = $this->input->post('product_id');
+    $stock_id   = $this->input->post('stock_id');
+
+    if (!$product_id || !$stock_id) {
+        echo json_encode([]);
+        return;
+    }
+
+    $this->load->model('Stocks');
+    $batches = $this->Stocks->get_batches_by_product_stock($product_id, $stock_id);
+    echo json_encode($batches);
+}
+
+public function fetch_invoices() {
+    $product_id = $this->input->post('product_id');
+    $stock_id   = $this->input->post('stock_id');
+    $batch_id   = $this->input->post('batch_id');
+
+    if (!$product_id || !$stock_id || !$batch_id) {
+        echo json_encode([]);
+        return;
+    }
+
+    $this->load->model('Stocks');
+    $invoices = $this->Stocks->get_invoice_by_product_stock($product_id, $stock_id, $batch_id);
+    echo json_encode($invoices);
+}
+public function fetch_available_quantity() {
+    $product_id = $this->input->post('product_id');
+    $stock_id   = $this->input->post('stock_id');
+    $batch_id   = $this->input->post('batch_id');
+    $invoice_id = $this->input->post('invoice_id');
+
+    if(!$product_id || !$stock_id || !$batch_id || !$invoice_id) {
+        echo json_encode(['available_qty' => 0]);
+        return;
+    }
+
+    $this->load->model('Stocks');
+    $available_qty = $this->Stocks->get_available_quantity($product_id, $stock_id, $batch_id, $invoice_id);
+    echo json_encode(['available_qty' => $available_qty]);
+}
+ public function insert_stock_transfer() {
+    $this->load->model('Stocks');
+
+    $from_stock_id = $this->input->post('stock_name');
+    $to_stock_id   = $this->input->post('to_stock_id');
+    $product_id    = $this->input->post('product_id');
+    $batch_id      = $this->input->post('batch_id');
+    $invoice_id    = $this->input->post('invoice_id');
+    $available_qty = $this->input->post('available_qty');
+    $transfer_qty  = $this->input->post('transfer_qty');
+    $transfer_note = $this->input->post('transfer_note');
+
+   // Fetch purchase_id and chalan_no based on stock, product, batch, and invoice
+$this->db->select('pp.purchase_id, pp1.chalan_no');
+$this->db->from('product_purchase_details pp');
+$this->db->join('product_purchase pp1', 'pp1.purchase_id = pp.purchase_id', 'left');
+$this->db->where('pp.stock_id', $from_stock_id);
+$this->db->where('pp.product_id', $product_id);
+$this->db->where('pp.batch_id', $batch_id);
+$this->db->where('pp.invoice_id', $invoice_id); // make sure invoice_id exists in purchase_details
+
+$purchase = $this->db->get()->row();
+
+
+if ($purchase) {
+    $purchase_id = $purchase->purchase_id;
+    $chalan_no   = $purchase->chalan_no;
+} else {
+    $purchase_id = null;
+    $chalan_no   = null;
+}
+
+    $data = [
+        'from_stock_id' => $from_stock_id,
+        'to_stock_id'   => $to_stock_id,
+        'product_id'    => $product_id,
+        'batch_id'      => $batch_id,
+        'invoice_id'    => $invoice_id,
+        'chalan_no'    => $chalan_no,
+        'available_qty' => $available_qty,
+        'transfer_qty'  => $transfer_qty,
+        'transfer_note' => $transfer_note,
+        'created_by'    => $this->session->userdata('user_id'),
+        'created_at'    => date('Y-m-d H:i:s')
+    ];
+
+    $inserted = $this->Stocks->insert_stock_transfer($data);
+
+    if ($inserted) {
+        // 1. Update the quantity in the original stock
+        $this->Stocks->update_available_quantity_after_transfer($product_id, $batch_id, $invoice_id, $transfer_qty);
+
+        // 2. Insert a new record for the destination stock with new invoice_id
+       $this->Stocks->insert_transferred_stock_to_destination($product_id, $to_stock_id, $batch_id, $transfer_qty, $invoice_id);
+       // 3. insert into product purchese
+
+        $this->session->set_flashdata('message', 'Stock transferred successfully!');
+    } else {
+        $this->session->set_flashdata('error_message', 'Failed to transfer stock.');
+    }
+
+    redirect('Creport/stock_transfer');
+}
+ public function stock_transfer_history(){
+    //$this->product_id=$product_id;
+		$CI =& get_instance();
+		$this->auth->check_admin_auth();
+		$CI->load->library('lreport');
+        $content = $CI->lreport->stock_transfer_history();
+		$this->template->full_admin_html_view($content);
+
+  }
+
+
+
+ 
+
 	
 }

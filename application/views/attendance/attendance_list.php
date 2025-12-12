@@ -92,9 +92,9 @@ $add3 =array(
     'style'       =>'align="center";'
 );
  echo form_input($add0); 
-//  echo form_input($add2); 
+//echo form_input($add2); 
 echo form_input($add); 
-echo form_input($add3); 
+//echo form_input($add3); 
 
 
 ?>
@@ -112,6 +112,7 @@ echo form_input($add3);
                 <thead>
                     <tr>
                       <th><?php echo display('Sl') ?></th>
+                      <th><?php echo display('stock_name') ?></th>
                         <th><?php echo display('name') ?></th>
                         <th><?php echo display('date') ?></th>
                         <th><?php echo display('check_in') ?></th>
@@ -129,6 +130,7 @@ echo form_input($add3);
                         <?php foreach ($attendance_list as $row): ?>
                             <tr class="<?php echo ($sl & 1)?"odd gradeX":"even gradeC" ?>">
                             <td><?php echo $sl; ?></td>
+                            <td><?php echo $row['stock_name']; ?></td>
                                 <td><?php echo $row['first_name'].' '.$row['last_name']; ?></td>
                                 <td><?php echo $row['date']; ?></td>
                                 <td><?php echo $row['sign_in']; ?></td>
@@ -342,5 +344,30 @@ echo form_input($add3);
         </div>
     </section>
 </div>
+<script>
+<script>
+$(document).ready(function() {
+    // Destroy any previous DataTable (prevents double initialization)
+    if ($.fn.DataTable.isDataTable('.datatable')) {
+        $('.datatable').DataTable().destroy();
+    }
+
+    // Initialize safely
+    $('.datatable').DataTable({
+        "paging": true,
+        "searching": true,
+        "ordering": true,
+        "order": [[0, "asc"]],
+        "lengthMenu": [10, 25, 50, 100],
+        "autoWidth": false,     // prevents column misalignment
+        "responsive": true,     // makes layout flexible
+        "columnDefs": [
+            { "orderable": false, "targets": [] }
+        ]
+    });
+});
+</script>
+
+
 
 

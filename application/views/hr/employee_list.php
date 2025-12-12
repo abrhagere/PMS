@@ -56,6 +56,7 @@
                                 <thead>
                                     <tr>
                         <th class="text-center"><?php echo display('sl') ?></th>
+                        <th class="text-center"><?php echo display('stock_name') ?></th>
                         <th class="text-center"><?php echo display('name') ?></th>
                         <th class="text-center"><?php echo display('designation') ?></th>
                         <th class="text-center"><?php echo display('phone') ?></th>
@@ -74,6 +75,8 @@
                                          foreach($employee_list as $employees){?>
                                         <tr>
                                 <td class="text-center"><?php echo $sl;?></td>
+                                <td class="text-center"><?php echo $employees['stock_name']; ?></td>
+
                                 <td class="text-center"><?php echo $employees['first_name'].' '.$employees['last_name'];?></td>
                                 <td class="text-center"><?php echo $employees['designation'];?></td>
                                 <td class="text-center"><?php echo $employees['phone'];?></td>

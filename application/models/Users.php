@@ -171,7 +171,27 @@ class Users extends CI_Model {
 		$query = $this->db->get();
 		
 		if ($query->num_rows() > 0) {
-			return $query->result_array();	
+			$result = $query->result_array();
+			
+			// Get user roles
+			$user_id_str = (string)$user_id;
+			$this->db->select('sr.type, sr.id');
+			$this->db->from('sec_userrole sur');
+			$this->db->join('sec_role sr', 'sr.id = sur.roleid');
+			$this->db->where('sur.user_id', $user_id_str);
+			$role_query = $this->db->get();
+			$roles = array();
+			if ($role_query->num_rows() > 0) {
+				foreach ($role_query->result() as $role) {
+					$roles[] = $role->type;
+				}
+			}
+			
+			// Add roles to result
+			$result[0]['roles'] = $roles;
+			$result[0]['roles_display'] = !empty($roles) ? implode(', ', $roles) : 'No Role Assigned';
+			
+			return $result;	
 		}
 		return false;
 	}
@@ -232,5 +252,14 @@ class Users extends CI_Model {
 		}
 		return false;
 	}
+	 public function get_all_users()
+    {
+        $this->db->select('user_id, first_name, last_name');
+        $this->db->from('users'); // your users table
+        $this->db->order_by('first_name', 'ASC');
+        $query = $this->db->get();
+
+        return $query->num_rows() > 0 ? $query->result_array() : [];
+    }
 
 }

@@ -155,10 +155,12 @@ function printDiv(divName) {
 
 			                <div class="table-responsive">
 
-			                    <table class="table table-bordered table-striped table-hover">
+			                    <table id="manufacturerLedgerTable" class="table table-bordered table-striped table-hover">
+
 									<thead>
 										<tr>
 											<th class="text-center"><?php echo display('date') ?></th>
+											<th class="text-center"><?php echo display('stock_name') ?></th>
 											<th class="text-center"><?php echo display('description') ?></th>
 											<th class="text-center"><?php echo display('invoice_no') ?></th>
 											<th class="text-center"><?php echo display('deposite_id') ?></th>
@@ -177,6 +179,7 @@ function printDiv(divName) {
 									 ?>
 										<tr>
 											<td><?php echo $ledger['date'] ?></td>
+											<td><?php echo $ledger['stock_name'] ?></td>
 											<td><?php echo $ledger['description'] ?></td>
 											<td>
 												<a href="<?php echo base_url('Cpurchase/purchase_details_data/'. $ledger['transaction_id'])?>"><?php echo $ledger['chalan_no'] ?></a>
@@ -228,13 +231,21 @@ function printDiv(divName) {
 									?>
 									</tbody>
 									<tfoot>
-										<tr>
-											<td colspan="4" align="right"><b><?php echo display('grand_total')?>:</b></td>
-											<td align="right"><b><?php echo (($position==0)?"$currency ".number_format($total_debit,2)."":"".number_format($total_debit,2)." $currency") ?></b></td>
-											<td align="right"><b><?php echo (($position==0)?"$currency ".number_format($total_credit,2)."":"".number_format($total_credit,2)." $currency") ?></b></td>
-											<td align="right"><b><?php echo (($position==0)?"$currency ".number_format($total_balance,2)."":"".number_format($total_balance,2)." $currency") ?></b></td>
-										</tr>
-									</tfoot>
+    <tr>
+        <td colspan="4" align="right"><b><?php echo display('grand_total')?>:</b></td>
+        <td></td> <!-- Deposit ID column has no total -->
+        <td align="right"><b>
+            <?php echo (($position==0) ? "$currency ".number_format($total_debit, 2) : number_format($total_debit, 2)." $currency") ?>
+        </b></td>
+        <td align="right"><b>
+            <?php echo (($position==0) ? "$currency ".number_format($total_credit, 2) : number_format($total_credit, 2)." $currency") ?>
+        </b></td>
+        <td align="right"><b>
+            <?php echo (($position==0) ? "$currency ".number_format($total_balance, 2) : number_format($total_balance, 2)." $currency") ?>
+        </b></td>
+    </tr>
+</tfoot>
+
 			                    </table>
 			                </div>
 			            </div>
@@ -273,4 +284,95 @@ function printDiv(divName) {
 	        $("#datebetween").hide();
 	    }
 	});
+</script>
+<script>
+$(document).ready(function() {
+    $('#manufacturerLedgerTable').DataTable({
+        "paging": true,
+        "searching": true,
+        "ordering": true,
+        "order": [],
+        "columnDefs": [
+            { "orderable": false, "targets": [4] } // Disable ordering on 'deposit_id' column
+        ],
+        "footerCallback": function ( row, data, start, end, display ) {
+            var api = this.api();
+
+            // Helper function to parse float from string with currency symbols
+            var parseCurrency = function (i) {
+                if (typeof i === 'string') {
+                    // Remove currency symbols and commas
+                    return parseFloat(i.replace(/[^0-9\.\-]+/g,"")) || 0;
+                }
+                if (typeof i === 'number') {
+                    return i;
+                }
+                return 0;
+            };
+
+            // Total over all pages for debit (column 5)
+            var totalDebit = api
+                .column(5)
+                .data()
+                .reduce(function (a, b) {
+                    return parseCurrency(a) + parseCurrency(b);
+                }, 0);
+
+            // Total over this page for debit
+            var pageTotalDebit = api
+                .column(5, { page: 'current' })
+                .data()
+                .reduce(function (a, b) {
+                    return parseCurrency(a) + parseCurrency(b);
+                }, 0);
+
+            // Total over all pages for credit (column 6)
+            var totalCredit = api
+                .column(6)
+                .data()
+                .reduce(function (a, b) {
+                    return parseCurrency(a) + parseCurrency(b);
+                }, 0);
+
+            // Total over this page for credit
+            var pageTotalCredit = api
+                .column(6, { page: 'current' })
+                .data()
+                .reduce(function (a, b) {
+                    return parseCurrency(a) + parseCurrency(b);
+                }, 0);
+
+            // Total over all pages for balance (column 7)
+            var totalBalance = api
+                .column(7)
+                .data()
+                .reduce(function (a, b) {
+                    return parseCurrency(a) + parseCurrency(b);
+                }, 0);
+
+            // Total over this page for balance
+            var pageTotalBalance = api
+                .column(7, { page: 'current' })
+                .data()
+                .reduce(function (a, b) {
+                    return parseCurrency(a) + parseCurrency(b);
+                }, 0);
+
+            // Format numbers with currency and 2 decimals
+            var formatCurrency = function(amount) {
+                // Use PHP variables passed via JS or hardcode currency and position
+                var currency = '<?php echo $currency; ?>';
+                var position = <?php echo $position; ?>; // 0 = prefix, 1 = suffix
+                amount = amount.toFixed(2);
+                return position == 0 ? currency + " " + amount : amount + " " + currency;
+            };
+
+            // Update footer cells with page total values
+            $(api.column(5).footer()).html(formatCurrency(pageTotalDebit));
+            $(api.column(6).footer()).html(formatCurrency(pageTotalCredit));
+            $(api.column(7).footer()).html(formatCurrency(pageTotalBalance));
+        }
+    });
+});
+
 </script>

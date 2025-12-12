@@ -20,116 +20,119 @@ class Purchases extends CI_Model {
 		return false;
 	}
 
-	  public function getPurchaseList($postData=null){
-         $this->load->library('occational');
-         $this->load->model('Web_settings');
-         $currency_details = $this->Web_settings->retrieve_setting_editdata();
-         $response = array();
-         $fromdate = $this->input->post('fromdate');
-         $todate   = $this->input->post('todate');
-         if(!empty($fromdate)){
-            $datbetween = "(a.purchase_date BETWEEN '$fromdate' AND '$todate')";
-         }else{
-            $datbetween = "";
-         }
-         ## Read value
-         $draw = $postData['draw'];
-         $start = $postData['start'];
-         $rowperpage = $postData['length']; // Rows display per page
-         $columnIndex = $postData['order'][0]['column']; // Column index
-         $columnName = $postData['columns'][$columnIndex]['data']; // Column name
-         $columnSortOrder = $postData['order'][0]['dir']; // asc or desc
-         $searchValue = $postData['search']['value']; // Search value
-
-         ## Search 
-         $searchQuery = "";
-         if($searchValue != ''){
-            $searchQuery = " (b.manufacturer_name like '%".$searchValue."%' or a.chalan_no like '%".$searchValue."%' or a.purchase_date like'%".$searchValue."%')";
-         }
-
-         ## Total number of records without filtering
-        $this->db->select('count(*) as allcount');
+    public function getPurchaseList($postData=null){
+        $this->load->library('occational');
+        $this->load->model('Web_settings');
+        $currency_details = $this->Web_settings->retrieve_setting_editdata();
+    
+        $CI =& get_instance(); // Get CI instance
+        $user_id = $CI->session->userdata('user_id'); // Current logged-in user
+    
+        $response = array();
+        $fromdate = $this->input->post('fromdate');
+        $todate   = $this->input->post('todate');
+        $datbetween = !empty($fromdate) ? "(a.purchase_date BETWEEN '$fromdate' AND '$todate')" : "";
+    
+        ## Read DataTables parameters
+        $draw = $postData['draw'];
+        $start = $postData['start'];
+        $rowperpage = $postData['length'];
+        $columnIndex = $postData['order'][0]['column'];
+        $columnName = $postData['columns'][$columnIndex]['data'];
+        $columnSortOrder = $postData['order'][0]['dir'];
+        $searchValue = $postData['search']['value'];
+    
+        ## Search Query
+        $searchQuery = "";
+        if($searchValue != ''){
+            $searchQuery = " (b.manufacturer_name LIKE '%".$searchValue."%' 
+                            OR a.chalan_no LIKE '%".$searchValue."%' 
+                            OR a.purchase_date LIKE '%".$searchValue."%' 
+                            OR s.stock_name LIKE '%".$searchValue."%')";
+        }
+    
+        ## Total number of records without filtering
+        $this->db->select('COUNT(a.purchase_id) as allcount');
         $this->db->from('product_purchase a');
         $this->db->join('manufacturer_information b', 'b.manufacturer_id = a.manufacturer_id','left');
-          if(!empty($fromdate) && !empty($todate)){
-             $this->db->where($datbetween);
-         }
-          if($searchValue != '')
-          $this->db->where($searchQuery);
-          
-         $records = $this->db->get()->result();
-          //echo $this->db->last_query();
-         $totalRecords = $records[0]->allcount;
-
-         ## Total number of record with filtering
-         $this->db->select('count(*) as allcount');
+        $this->db->join('stock s', 's.id = a.stock_id','left'); // join stock table
+    
+        if(!empty($datbetween)) $this->db->where($datbetween);
+        if($searchValue != '') $this->db->where($searchQuery);
+    
+        // ✅ Filter only purchases assigned to current user
+        $this->db->where("s.assign_users LIKE '%\"$user_id\"%'");
+    
+        $records = $this->db->get()->result();
+        $totalRecords = isset($records[0]->allcount) ? (int)$records[0]->allcount : 0;
+    
+        ## Total number of record with filtering
+        $this->db->select('COUNT(a.purchase_id) as allcount');
         $this->db->from('product_purchase a');
         $this->db->join('manufacturer_information b', 'b.manufacturer_id = a.manufacturer_id','left');
-         if(!empty($fromdate) && !empty($todate)){
-             $this->db->where($datbetween);
-         }
-         if($searchValue != '')
-            $this->db->where($searchQuery);
-          
-         $records = $this->db->get()->result();
-          //echo $this->db->last_query();
-         $totalRecordwithFilter = $records[0]->allcount;
-
-         ## Fetch records
-        $this->db->select('a.*,b.manufacturer_name');
+        $this->db->join('stock s', 's.id = a.stock_id','left');
+    
+        if(!empty($datbetween)) $this->db->where($datbetween);
+        if($searchValue != '') $this->db->where($searchQuery);
+        $this->db->where("s.assign_users LIKE '%\"$user_id\"%'");
+    
+        $records = $this->db->get()->result();
+        $totalRecordwithFilter = isset($records[0]->allcount) ? (int)$records[0]->allcount : 0;
+    
+        ## Fetch records
+        $this->db->select('a.*, b.manufacturer_name, s.stock_name');
         $this->db->from('product_purchase a');
         $this->db->join('manufacturer_information b', 'b.manufacturer_id = a.manufacturer_id','left');
-          if(!empty($fromdate) && !empty($todate)){
-             $this->db->where($datbetween);
-         }
-         if($searchValue != '')
-         $this->db->where($searchQuery);
-       
-         $this->db->order_by($columnName, $columnSortOrder);
-         $this->db->limit($rowperpage, $start);
-         $records = $this->db->get()->result();
-        // echo $this->db->last_query();
-         $data = array();
-         $sl =1;
-         foreach($records as $record ){
-          $button = '';
-          $base_url = base_url();
-          $jsaction = "return confirm('Are You Sure ?')";
-
-           $button .='  <a href="'.$base_url.'Cpurchase/purchase_details_data/'.$record->purchase_id.'" class="btn btn-success btn-sm" data-toggle="tooltip" data-placement="left" title="'.display('purchase_details').'"><i class="fa fa-window-restore" aria-hidden="true"></i></a>';
-      if($this->permission1->method('manage_purchase','update')->access()){
-         $button .=' <a href="'.$base_url.'Cpurchase/purchase_update_form/'.$record->purchase_id.'" class="btn btn-info btn-sm" data-toggle="tooltip" data-placement="left" title="'. display('update').'"><i class="fa fa-pencil" aria-hidden="true"></i></a>';
-     }
-
-        if($this->permission1->method('manage_purchase','delete')->access()){
-                                  
-           $button .= '<a href="'.$base_url.'Cpurchase/delete_purchase/'.$record->purchase_id.'" class="btn btn-danger btn-sm"  data-toggle="tooltip" data-placement="left" title="'.display('delete').'"  onclick="'.$jsaction.'"><i class="fa fa-trash"></i></a>';
-         }
-               
-            $data[] = array( 
-                'sl'               =>$sl,
-                'chalan_no'        =>$record->chalan_no,
-                'purchase_id'      =>$record->purchase_id,
-                'manufacturer_name'=>$record->manufacturer_name,
-                'purchase_id'      =>$record->purchase_id,
-                'purchase_date'    =>$record->purchase_date,
-                'total_amount'     =>$record->grand_total_amount,
-                'button'           =>$button,
-                
-            ); 
+        $this->db->join('stock s', 's.id = a.stock_id','left');
+    
+        if(!empty($datbetween)) $this->db->where($datbetween);
+        if($searchValue != '') $this->db->where($searchQuery);
+        $this->db->where("s.assign_users LIKE '%\"$user_id\"%'");
+    
+        $this->db->order_by($columnName, $columnSortOrder);
+        $this->db->limit($rowperpage, $start);
+        $records = $this->db->get()->result();
+    
+        $data = array();
+        $sl = 1;
+        foreach($records as $record){
+            $button = '';
+            $base_url = base_url();
+            $jsaction = "return confirm('Are You Sure ?')";
+    
+            $button .= '<a href="'.$base_url.'Cpurchase/purchase_details_data/'.$record->purchase_id.'" class="btn btn-success btn-sm" title="'.display('purchase_details').'"><i class="fa fa-window-restore"></i></a>';
+            if($this->permission1->method('manage_purchase','update')->access()){
+                $button .= '<a href="'.$base_url.'Cpurchase/purchase_update_form/'.$record->purchase_id.'" class="btn btn-info btn-sm" title="'.display('update').'"><i class="fa fa-pencil"></i></a>';
+            }
+            if($this->permission1->method('manage_purchase','delete')->access()){
+                $button .= '<a href="'.$base_url.'Cpurchase/delete_purchase/'.$record->purchase_id.'" class="btn btn-danger btn-sm" title="'.display('delete').'" onclick="'.$jsaction.'"><i class="fa fa-trash"></i></a>';
+            }
+    
+            $data[] = array(
+                'sl' => $sl,
+                'chalan_no' => $record->chalan_no,
+                'purchase_id' => $record->purchase_id,
+                'manufacturer_name' => $record->manufacturer_name,
+                'stock_name' => $record->stock_name, // ✅ Added stock_name
+                'purchase_date' => $record->purchase_date,
+                'total_amount' => $record->grand_total_amount,
+                'button' => $button,
+            );
+    
             $sl++;
-         }
-
-         ## Response
-         $response = array(
+        }
+    
+        ## Response
+        $response = array(
             "draw" => intval($draw),
             "iTotalRecords" => $totalRecordwithFilter,
             "iTotalDisplayRecords" => $totalRecords,
             "aaData" => $data
-         );
-
-         return $response; 
+        );
+    
+        return $response;
     }
+    
 
     //purchese detail
     public function getDetailPurchaseList($postData = null)
@@ -137,6 +140,9 @@ class Purchases extends CI_Model {
     $this->load->library('occational');
     $this->load->model('Web_settings');
     $currency_details = $this->Web_settings->retrieve_setting_editdata();
+
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id'); // Current logged-in user
 
     $fromdate = $this->input->post('fromdate');
     $todate   = $this->input->post('todate');
@@ -149,14 +155,14 @@ class Purchases extends CI_Model {
     $columnSortOrder = isset($postData['order'][0]['dir']) ? $postData['order'][0]['dir'] : 'desc';
     $searchValue = isset($postData['search']['value']) ? $postData['search']['value'] : '';
 
-    // Safe column names for ordering
     $columns = [
         'product_purchase_details.purchase_id',
         'pi.product_name',
         'product_purchase_details.quantity',
         'product_purchase_details.rate',
         'product_purchase_details.total_amount',
-        'mi.manufacturer_name'
+        'mi.manufacturer_name',
+        's.stock_name'
     ];
     $columnName = isset($columns[$columnIndex]) ? $columns[$columnIndex] : 'product_purchase_details.total_amount';
 
@@ -168,6 +174,11 @@ class Purchases extends CI_Model {
     $this->db->join('product_information pi', 'product_purchase_details.product_id = pi.product_id', 'left');
     $this->db->join('product_purchase p', 'product_purchase_details.purchase_id = p.purchase_id', 'left');
     $this->db->join('manufacturer_information mi', 'p.manufacturer_id = mi.manufacturer_id', 'left');
+    $this->db->join('stock s', 's.id = p.stock_id', 'left'); // join stock table
+
+    // Filter by stocks assigned to the user
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'");
+
     $totalRecords = $this->db->get()->row()->allcount;
 
     // -----------------------------------
@@ -178,6 +189,7 @@ class Purchases extends CI_Model {
     $this->db->join('product_information pi', 'product_purchase_details.product_id = pi.product_id', 'left');
     $this->db->join('product_purchase p', 'product_purchase_details.purchase_id = p.purchase_id', 'left');
     $this->db->join('manufacturer_information mi', 'p.manufacturer_id = mi.manufacturer_id', 'left');
+    $this->db->join('stock s', 's.id = p.stock_id', 'left'); // join stock table
 
     if (!empty($fromdate) && !empty($todate)) {
         $this->db->where('p.purchase_date >=', $fromdate);
@@ -189,8 +201,11 @@ class Purchases extends CI_Model {
         $this->db->like('mi.manufacturer_name', $searchValue);
         $this->db->or_like('pi.product_name', $searchValue);
         $this->db->or_like('product_purchase_details.purchase_id', $searchValue);
+        $this->db->or_like('s.stock_name', $searchValue); // include stock_name in search
         $this->db->group_end();
     }
+
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'");
 
     $totalRecordwithFilter = $this->db->get()->row()->allcount;
 
@@ -203,12 +218,15 @@ class Purchases extends CI_Model {
         pi.manufacturer_id, 
         mi.manufacturer_name,
         p.purchase_date,
-        p.manufacturer_id
+        p.manufacturer_id,
+        p.chalan_no,
+        s.stock_name
     ');
     $this->db->from('product_purchase_details');
     $this->db->join('product_information pi', 'product_purchase_details.product_id = pi.product_id', 'left');
     $this->db->join('product_purchase p', 'product_purchase_details.purchase_id = p.purchase_id', 'left');
     $this->db->join('manufacturer_information mi', 'p.manufacturer_id = mi.manufacturer_id', 'left');
+    $this->db->join('stock s', 's.id = p.stock_id', 'left'); // join stock table
 
     if (!empty($fromdate) && !empty($todate)) {
         $this->db->where('p.purchase_date >=', $fromdate);
@@ -220,8 +238,11 @@ class Purchases extends CI_Model {
         $this->db->like('mi.manufacturer_name', $searchValue);
         $this->db->or_like('pi.product_name', $searchValue);
         $this->db->or_like('product_purchase_details.purchase_id', $searchValue);
+        $this->db->or_like('s.stock_name', $searchValue);
         $this->db->group_end();
     }
+
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'");
 
     $this->db->order_by($columnName, $columnSortOrder);
     $this->db->limit($rowperpage, $start);
@@ -240,8 +261,10 @@ class Purchases extends CI_Model {
             'product_name'      => $record->product_name,
             'quantity'          => $record->quantity,
             'rate'              => $record->rate,
+            'chalan_no'        =>$record->chalan_no,
             'total_amount'      => $record->total_amount,
             'manufacturer_name' => $record->manufacturer_name,
+            'stock_name'        => $record->stock_name, // ✅ stock_name included
             'purchase_date'     => $record->purchase_date,
         );
     }
@@ -258,6 +281,7 @@ class Purchases extends CI_Model {
 
     return $response;
 }
+
 
 
 
@@ -329,6 +353,7 @@ class Purchases extends CI_Model {
     $p_id = $this->input->post('product_id');
     $chalan_no = $this->input->post('chalan_no');
     $manufacturer_id = $this->input->post('manufacturer_id');
+    $stock_id = $this->input->post('stock_name');
 
     // Manufacturer COA head
     $manufacturer_info = $this->db->select('*')
@@ -384,6 +409,7 @@ class Purchases extends CI_Model {
         'purchase_id'       => $purchase_id,
         'chalan_no'         => $chalan_no,
         'manufacturer_id'   => $manufacturer_id,
+        'stock_id'   => $stock_id,
         'grand_total_amount'=> $this->input->post('grand_total_price'),
         'total_discount'    => $this->input->post('total_discount'),
         'purchase_date'     => $this->input->post('purchase_date'),
@@ -493,6 +519,7 @@ class Purchases extends CI_Model {
 
     $ledger = array(
         'transaction_id'   => $purchase_id,
+        'stock_id'   => $stock_id,
         'chalan_no'        => $chalan_no,
         'manufacturer_id'  => $manufacturer_id,
         'amount'           => $this->input->post('grand_total_price'),
@@ -553,7 +580,8 @@ class Purchases extends CI_Model {
             'discount'          => $discount[$i],
             'batch_id'          => $batch[$i],
             'invoice_id'        => $new_invoice,
-            'expeire_date'      => $exp_date[$i],
+            'stock_id'        => $stock_id,
+            'expeire_date' => !empty($exp_date[$i]) ? $exp_date[$i] : '2075-01-01',
             'status'            => 1
         );
 
@@ -614,6 +642,7 @@ return;
 						c.product_name,
 						c.product_model,
 						d.manufacturer_id,
+                        b.stock_id,
 						d.manufacturer_name'
 						);
 		$this->db->from('product_purchase a');
@@ -822,6 +851,7 @@ public function update_purchase()
     $rate = $this->input->post('product_rate');
     $p_id = $this->input->post('product_id');
     $quantity = $this->input->post('product_quantity');
+    $stock_id = $this->input->post('stock_id');
     $t_price = $this->input->post('total_price');
     $sell_rate = $this->input->post('sale_rate');
     $invoice_id = $this->input->post('invoice_id');
@@ -834,6 +864,7 @@ public function update_purchase()
         $product_rate = $rate[$i];
         $sell_price_item = $sell_rate[$i];
         $product_id = $p_id[$i];
+        //$stock_id = $stock_id[$i];
         $total_price = $t_price[$i];
         $batch_id = $batch[$i];
         $expre_date = $exp_date[$i];
@@ -847,6 +878,7 @@ public function update_purchase()
                 'quantity'           => $product_quantity,
                 'rate'               => $product_rate,
                 'batch_id'           => $batch_id,
+                'stock_id'           => $stock_id,
                 'expeire_date'       => $expre_date,
                 'total_amount'       => $total_price,
                 'invoice_id'         => $invoice_id,

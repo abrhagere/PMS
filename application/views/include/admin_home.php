@@ -107,21 +107,6 @@
                 </div>
                 </div>
                 <?php } ?>
-                  <?php
-                if($this->permission1->method('manage_medicine','read')->access()) { ?>
-                <div class="col-xs-12 col-sm-4 col-md-4 col-lg-2">
-                <div class="panel panel-bd">
-                    <div class="panel-body">
-                        <div class="statistic-box">
-                             <a href="<?php echo base_url('Creport/out_of_date')?>" style="color:#000">
-                            <h2><span class="count-number"><?php echo $expired ?></span><span class="slight"> <i class="fa fa-play fa-rotate-270 text-warning"> </i> </span></h2></a>
-                            <div class="small"><?php echo display('expired')?></div>
-                            <div class="sparkline3 text-center"></div>
-                        </div>
-                    </div>
-                </div>
-                </div>
-                <?php } ?>
                       <?php
                 if($this->permission1->method('manage_invoice','read')->access()) { ?>
                 <div class="col-xs-12 col-sm-6 col-md-6 col-lg-2">
@@ -327,77 +312,6 @@
             </div>
 
             <!-- Net grand/paid profit -->
-<div class="col-xs-12 col-sm-12 col-md-6 col-lg-4">
-    <?php if($this->permission1->method('todays_report','read')->access()) { ?>
-        <div class="panel panel-bd lobidisable" style="margin-bottom:10px;">
-            <div class="panel-heading" style="padding:5px 10px; font-size:14px;">
-                <div class="panel-title">
-                    <h4 style="margin:0;"><?php echo display('net_grand_and_paid_profit'); ?></h4>
-                </div>
-            </div>
-            <div class="panel-body" style="padding:10px;">
-                <table class="table table-bordered table-striped table-hover" style="margin-bottom:0;">
-                    <thead>
-                        <tr>
-                            <th style="padding:4px 8px;"><?php echo display('report'); ?></th>
-                            <th style="padding:4px 8px;"><?php echo display('amount'); ?></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th style="padding:4px 8px;"><?php echo display('total_purchase'); ?></th>
-                            <td style="padding:4px 8px;">
-                                <?php echo ($position == 0) ? "$currency $dashboard_purchase" : "$dashboard_purchase $currency"; ?>
-                            </td>
-                        </tr>
-                        <tr>
-    <th style="padding:4px 8px;"><?php echo display('total_sales'); ?></th>
-    <td style="padding:4px 8px;">
-        <?php echo ($position == 0) ? "$currency $dashboard_sales" : "$dashboard_sales $currency"; ?>
-    </td>
-</tr>
-
-                        <tr>
-                            <th style="padding:4px 8px;"><?php echo display('paid_amount'); ?></th>
-                            <td style="padding:4px 8px;">
-                                <?php echo ($position == 0) ? "$currency $dashboard_paid_total" : "$dashboard_paid_total $currency"; ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th style="padding:4px 8px;"><?php echo display('total_expense_ammount'); ?></th>
-                            <td style="padding:4px 8px;">
-                                <?php echo ($position == 0) ? "$currency $dashboard_expense" : "$dashboard_expense $currency"; ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th style="padding:4px 8px;"><?php echo display('total_paid_salary'); ?></th>
-                            <td style="padding:4px 8px;">
-                                <?php echo ($position == 0) ? "$currency $dashboard_salary" : "$dashboard_salary $currency"; ?>
-                            </td>
-                        </tr>
-                        
-                        <tr>
-                            <th style="padding:4px 8px;"><?php echo display('net_profit'); ?></th>
-                            <td style="padding:4px 8px;">
-                                <?php echo ($position == 0) ? "$currency $dashboard_net_profit" : "$dashboard_net_profit $currency"; ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th style="padding:4px 8px;"><?php echo display('paid_profit'); ?></th>
-                            <td style="padding:4px 8px;">
-                                <?php echo ($position == 0) ? "$currency $dashboard_paid_profit" : "$dashboard_paid_profit $currency"; ?>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    <?php } ?>
-</div>
-
-
-
-
 
         </div>
 

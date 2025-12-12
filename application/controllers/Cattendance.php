@@ -116,7 +116,6 @@ $update = $this->db->where('att_id',$this->input->post('att_id',true))
         $content = $this->lattendance->attendance_list($links, $config["per_page"], $page, $pagenum);
 
         $this->template->full_admin_html_view($content);
-        ;
     }
 
     // attendance delete
@@ -247,6 +246,7 @@ $update = $this->db->where('att_id',$this->input->post('att_id',true))
     $this->load->model('Attendance_model');
     $data['title']      = display('attendance_report');
      $id                = $this->input->post('employee_id');
+     
     $start_date         = $this->input->post('s_date');
     $end_date           = $this->input->post('e_date');
     $data['employee_id']= $id;

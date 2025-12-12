@@ -12,76 +12,121 @@ class Invoices extends CI_Model {
 	}
 	//Count invoice
 	public function count_invoice()
-	{
-		return $this->db->count_all("invoice");
-	}
+{
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+
+    $this->db->from('invoice b');  // assuming 'invoice' table alias is 'b'
+    $this->db->join('stock s', 's.id = b.stock_id', 'left');
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+
+    return $this->db->count_all_results();
+}
 
 
 
-	public function getInvoiceList($postData=null){
-       $this->load->library('occational');
-         $response = array();
-         $fromdate = $this->input->post('fromdate');
-         $todate   = $this->input->post('todate');
-         if(!empty($fromdate)){
-            $datbetween = "(a.date BETWEEN '$fromdate' AND '$todate')";
-         }else{
-            $datbetween = "";
-         }
-         ## Read value
-         $draw = $postData['draw'];
-         $start = $postData['start'];
-         $rowperpage = $postData['length']; // Rows display per page
-         $columnIndex = $postData['order'][0]['column']; // Column index
-         $columnName = $postData['columns'][$columnIndex]['data']; // Column name
-         $columnSortOrder = $postData['order'][0]['dir']; // asc or desc
-         $searchValue = $postData['search']['value']; // Search value
 
-         ## Search 
-         $searchQuery = "";
-         if($searchValue != ''){
-            $searchQuery = " (b.customer_name like '%".$searchValue."%' or a.invoice like '%".$searchValue."%' or a.date like'%".$searchValue."%' or a.invoice_id like'%".$searchValue."%')";
-         }
+	public function getInvoiceList($postData = null)
+{
+    $this->load->library('occational');
 
-         ## Total number of records without filtering
-         $this->db->select('count(*) as allcount');
-         $this->db->from('invoice a');
-         $this->db->join('customer_information b', 'b.customer_id = a.customer_id','left');
-          if(!empty($fromdate) && !empty($todate)){
-             $this->db->where($datbetween);
-         }
-          if($searchValue != '')
-          $this->db->where($searchQuery);
-          
-         $records = $this->db->get()->result();
-         // echo $this->db->last_query();
-         $totalRecords = $records[0]->allcount;
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
 
-         ## Total number of record with filtering
-         $this->db->select('count(*) as allcount');
-         $this->db->from('invoice a');
-         $this->db->join('customer_information b', 'b.customer_id = a.customer_id','left');
-         if(!empty($fromdate) && !empty($todate)){
-             $this->db->where($datbetween);
-         }
-         if($searchValue != '')
-            $this->db->where($searchQuery);
-          
-         $records = $this->db->get()->result();
-         // echo $this->db->last_query();
-         $totalRecordwithFilter = $records[0]->allcount;
+    $response = array();
+    $fromdate = $this->input->post('fromdate');
+    $todate   = $this->input->post('todate');
 
-         ## Fetch records
-      $this->db->select("
-    a.*, 
-    b.customer_name, 
-    d.paid_amount, 
-    d.due_amount, 
-    d.total_manufacturer
-");
-$this->db->from('invoice a');
-$this->db->join('customer_information b', 'b.customer_id = a.customer_id', 'left');
-$this->db->join("(
+    $datbetween = "";
+    if (!empty($fromdate) && !empty($todate)) {
+        $datbetween = "(a.date BETWEEN '$fromdate' AND '$todate')";
+    }
+
+    // DataTables variables
+    $draw = $postData['draw'];
+    $start = $postData['start'];
+    $rowperpage = $postData['length'];
+    $columnIndex = $postData['order'][0]['column'];
+    $columnName = $postData['columns'][$columnIndex]['data'];
+    $columnSortOrder = $postData['order'][0]['dir'];
+    $searchValue = $postData['search']['value'];
+
+    // -----------------------
+    // Search query
+    // -----------------------
+    $searchQuery = "";
+    if ($searchValue != '') {
+        $searchQuery = "(
+            b.customer_name LIKE '%".$searchValue."%' 
+            OR a.invoice LIKE '%".$searchValue."%' 
+            OR a.date LIKE '%".$searchValue."%' 
+            OR a.invoice_id LIKE '%".$searchValue."%' 
+            OR s.stock_name LIKE '%".$searchValue."%' 
+            OR u.first_name LIKE '%".$searchValue."%' 
+            OR u.last_name LIKE '%".$searchValue."%' 
+            OR CONCAT(u.first_name, ' ', u.last_name) LIKE '%".$searchValue."%'
+        )";
+    }
+
+    // -----------------------
+    // Total records without filtering
+    // -----------------------
+    $this->db->select('COUNT(a.invoice_id) as allcount');
+    $this->db->from('invoice a');
+    $this->db->join('customer_information b', 'b.customer_id = a.customer_id', 'left');
+    $this->db->join('stock s', 's.id = a.stock_id', 'left');
+    $this->db->join('users u', 'a.sales_by = u.user_id', 'left');
+
+    if (!empty($fromdate) && !empty($todate)) {
+        $this->db->where($datbetween);
+    }
+
+    if ($searchValue != '') {
+        $this->db->where($searchQuery, null, false);
+    }
+
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+    $records = $this->db->get()->result();
+    $totalRecords = isset($records[0]->allcount) ? (int)$records[0]->allcount : 0;
+
+    // -----------------------
+    // Total records with filtering
+    // -----------------------
+    $this->db->select('COUNT(a.invoice_id) as allcount');
+    $this->db->from('invoice a');
+    $this->db->join('customer_information b', 'b.customer_id = a.customer_id', 'left');
+    $this->db->join('stock s', 's.id = a.stock_id', 'left');
+    $this->db->join('users u', 'a.sales_by = u.user_id', 'left');
+
+    if (!empty($fromdate) && !empty($todate)) {
+        $this->db->where($datbetween);
+    }
+
+    if ($searchValue != '') {
+        $this->db->where($searchQuery, null, false);
+    }
+
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+    $records = $this->db->get()->result();
+    $totalRecordwithFilter = isset($records[0]->allcount) ? (int)$records[0]->allcount : 0;
+
+    // -----------------------
+    // Fetch filtered records
+    // -----------------------
+    $this->db->select("
+        a.*, 
+        CONCAT(u.first_name, ' ', u.last_name) AS full_name,
+        b.customer_name, 
+        s.stock_name, 
+        d.paid_amount, 
+        d.due_amount, 
+        d.total_manufacturer
+    ");
+    $this->db->from('invoice a');
+    $this->db->join('users u', 'a.sales_by = u.user_id', 'left');
+    $this->db->join('customer_information b', 'b.customer_id = a.customer_id', 'left');
+    $this->db->join('stock s', 's.id = a.stock_id', 'left');
+    $this->db->join("(
         SELECT 
             invoice_id,
             MAX(paid_amount) AS paid_amount,
@@ -91,69 +136,73 @@ $this->db->join("(
         GROUP BY invoice_id
     ) d", 'd.invoice_id = a.invoice_id', 'left');
 
-
-
-          if(!empty($fromdate) && !empty($todate)){
-             $this->db->where($datbetween);
-         }
-         if($searchValue != '')
-         $this->db->where($searchQuery);
-       
-         $this->db->order_by($columnName, $columnSortOrder);
-         $this->db->limit($rowperpage, $start);
-         $records = $this->db->get()->result();
-         //echo $this->db->last_query();
-         $data = array();
-         $sl =1;
-  
-         foreach($records as $record ){
-          $button = '';
-          $base_url = base_url();
-          $jsaction = "return confirm('Are You Sure ?')";
-
-           $button .='  <a href="'.$base_url.'Cinvoice/invoice_inserted_data/'.$record->invoice_id.'" class="btn btn-success btn-sm" data-toggle="tooltip" data-placement="left" title="'.display('invoice').'"><i class="fa fa-window-restore" aria-hidden="true"></i></a>';
-
-      
-
-         $button .='  <a href="'.$base_url.'Cinvoice/pos_invoice_inserted_data/'.$record->invoice_id.'" class="btn btn-warning btn-sm" data-toggle="tooltip" data-placement="left" title="'.display('pos_invoice').'"><i class="fa fa-fax" aria-hidden="true"></i></a>';
-
-      if($this->permission1->method('manage_invoice','update')->access()){
-         $button .=' <a href="'.$base_url.'Cinvoice/invoice_update_form/'.$record->invoice_id.'" class="btn btn-info btn-sm" data-toggle="tooltip" data-placement="left" title="'. display('update').'"><i class="fa fa-pencil" aria-hidden="true"></i></a>';
-     }
-
-        if($this->permission1->method('manage_invoice','delete')->access()){
-                                  
-           $button .= '<a href="'.$base_url.'Cinvoice/invoice_delete/'.$record->invoice_id.'" class="btn btn-danger btn-sm" data-toggle="tooltip" data-placement="left" title="'. display('delete').'"  onclick="'.$jsaction.'"><i class="fa fa-trash"></i></a>';
-         }
-               
-          $data[] = array( 
-    'sl'                => $sl,
-    'invoice'           => $record->invoice,
-    'customer_name'     => $record->customer_name,
-    'final_date'        => $record->date,
-    'total_amount'      => $record->total_amount,
-    'paid_amount'       => $record->paid_amount,
-    'due_amount'        => ($record->total_amount)-($record->paid_amount),
-    'total_manufacturer'=> $record->total_manufacturer, // ✅ added
-	'grand_profit'       => $record->total_amount - $record->total_manufacturer, // ✅ new
-    'paid_profit'        => $record->paid_amount - $record->total_manufacturer,  // ✅ new
-    'button'            => $button,
-);
-
-
-            $sl++;
-         }
-
-         ## Response
-         $response = array(
-            "draw" => intval($draw),
-            "iTotalRecords" => $totalRecordwithFilter,
-            "iTotalDisplayRecords" => $totalRecords,
-            "aaData" => $data
-         );
-
-         return $response; 
+    if (!empty($fromdate) && !empty($todate)) {
+        $this->db->where($datbetween);
     }
+
+    if ($searchValue != '') {
+        $this->db->where($searchQuery, null, false);
+    }
+
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+    $this->db->order_by($columnName, $columnSortOrder);
+    $this->db->limit($rowperpage, $start);
+
+    $records = $this->db->get()->result();
+
+    // -----------------------
+    // Build data for DataTables
+    // -----------------------
+    $data = array();
+    $sl = 1;
+    $base_url = base_url();
+    $jsaction = "return confirm('Are You Sure ?')";
+
+    foreach ($records as $record) {
+        $button = '';
+        $button .= '<a href="'.$base_url.'Cinvoice/invoice_inserted_data/'.$record->invoice_id.'" class="btn btn-success btn-sm" title="'.display('invoice').'"><i class="fa fa-window-restore"></i></a>';
+        $button .= '<a href="'.$base_url.'Cinvoice/pos_invoice_inserted_data/'.$record->invoice_id.'" class="btn btn-warning btn-sm" title="'.display('pos_invoice').'"><i class="fa fa-fax"></i></a>';
+
+        if ($this->permission1->method('manage_invoice', 'update')->access()) {
+            $button .= '<a href="'.$base_url.'Cinvoice/invoice_update_form/'.$record->invoice_id.'" class="btn btn-info btn-sm" title="'.display('update').'"><i class="fa fa-pencil"></i></a>';
+        }
+
+        if ($this->permission1->method('manage_invoice', 'delete')->access()) {
+            $button .= '<a href="'.$base_url.'Cinvoice/invoice_delete/'.$record->invoice_id.'" class="btn btn-danger btn-sm" onclick="'.$jsaction.'" title="'.display('delete').'"><i class="fa fa-trash"></i></a>';
+        }
+
+        $data[] = array(
+            'sl'                 => $sl,
+            'invoice'            => $record->invoice,
+            'customer_name'      => $record->customer_name,
+            'stock_name'         => $record->stock_name,
+            'final_date'         => $record->date,
+            'full_name'          => $record->full_name,
+            'total_amount'       => $record->total_amount,
+            'paid_amount'        => $record->paid_amount,
+            'due_amount'         => $record->total_amount - $record->paid_amount,
+            'total_manufacturer' => $record->total_manufacturer,
+            'grand_profit'       => $record->total_amount - $record->total_manufacturer,
+            'paid_profit'        => $record->paid_amount - $record->total_manufacturer,
+            'button'             => $button,
+        );
+        $sl++;
+    }
+
+    // -----------------------
+    // DataTables Response
+    // -----------------------
+    $response = array(
+        "draw" => intval($draw),
+        "iTotalRecords" => $totalRecordwithFilter,
+        "iTotalDisplayRecords" => $totalRecords,
+        "aaData" => $data
+    );
+
+    return $response;
+}
+
+
 	//invoice List
 	public function invoice_list($perpage,$page)
 	{
@@ -409,6 +458,7 @@ public function pos_invoice_setup($product_id){
 			'date'				=>	$this->input->post('invoice_date'),
 			'total_amount'		=>	$this->input->post('grand_total_price'),
 			'total_tax'			=>	$this->input->post('total_tax'),
+			'stock_id'			=>	$this->input->post('stock_name'),
 			'invoice'			=>	$this->number_generator(),
 			'invoice_details'   =>  $this->input->post('inva_details'),
 			'total_discount' 	=> 	$this->input->post('total_discount'),
@@ -435,6 +485,7 @@ public function pos_invoice_setup($product_id){
 		// Insert to customer_ledger Table 
 		$data4 = array(
 			'transaction_id'	=>	$transection_id,
+			'stock_id'			=>	$this->input->post('stock_name'),
 			'customer_id'		=>	$customer_id,
 			'invoice_no'		=>	$invoice_id,
 			'date'				=>	$this->input->post('invoice_date'),
@@ -455,6 +506,7 @@ public function pos_invoice_setup($product_id){
 			//Insert to customer_ledger Table 
 			$data2 = array(
 				'transaction_id'	=>	$transection_id,
+				'stock_id'			=>	$this->input->post('stock_name'),
 				'customer_id'		=>	$customer_id,
 				'receipt_no'		=>	$this->auth->generator(10),
 				'date'				=>	$this->input->post('invoice_date'),
@@ -602,6 +654,7 @@ public function pos_invoice_setup($product_id){
 		$total_amount   = $this->input->post('total_price');
 		$discount_rate  = $this->input->post('discount');
 		$tax_amount 	= $this->input->post('tax');
+		$stock_id 	= $this->input->post('stock_name');
 		$manufacturer_rate_input = $this->input->post('manufacturer_rate'); // ← manufacturer_rate[]
 		$batch_id 	    = $this->input->post('batch_id');
 		$expiry_date 	    = $this->input->post('expiry_date');
@@ -625,6 +678,7 @@ public function pos_invoice_setup($product_id){
 				'invoice_details_id'	=>	$this->generator(15),
 				'invoice_id'			=>	$invoice_id,
 				'product_id'			=>	$product_id,
+				'stock_id'			=>	$stock_id,
 				'batch_id'              =>  $batch,
 				'expiry_date'              =>  $expiry,
 				'quantity'				=>	$product_quantity,
@@ -712,6 +766,8 @@ public function retrieve_invoice_editdata($invoice_id)
         c.batch_id,
         c.tax as t_p_tax,
         c.product_id,
+		c.stock_id,
+        s.stock_name,
         d.product_name,
         d.product_model,
         d.tax,
@@ -720,6 +776,7 @@ public function retrieve_invoice_editdata($invoice_id)
     $this->db->from('invoice a');
     $this->db->join('customer_information b','b.customer_id = a.customer_id');
     $this->db->join('invoice_details c','c.invoice_id = a.invoice_id');
+    $this->db->join('stock s','s.id = c.stock_id');
     $this->db->join('product_information d','d.product_id = c.product_id');
     $this->db->where('a.invoice_id',$invoice_id);
     $query = $this->db->get();
@@ -741,6 +798,7 @@ public function retrieve_invoice_editdata($invoice_id)
     $invoice_id         = $this->input->post('invoice_id');
     $customer_id        = $this->input->post('customer_id');
     $product_id         = $this->input->post('product_id');
+	$stock_id         = $this->input->post('stock_name');
     $expiry_dates       = $this->input->post('expiry_date');  // this will be an array
     $quantity           = $this->input->post('product_quantity');
     $rate               = $this->input->post('product_rate');
@@ -824,6 +882,7 @@ public function retrieve_invoice_editdata($invoice_id)
         // Insert customer ledger (Debit)
         $data2 = array(
             'transaction_id' => $tran,
+			'stock_id'			=>	$this->input->post('stock_name'),
             'customer_id'    => $customer_id,
             'invoice_no'     => $invoice_id,
             'date'           => $this->input->post('invoice_date'),
@@ -850,6 +909,7 @@ public function retrieve_invoice_editdata($invoice_id)
             'batch_id'           => $batch_id[$i],
             'quantity'           => $quantity[$i],
             'rate'               => $rate[$i],
+			'stock_id'               => $stock_id,
             'manufacturer_rate'  => $manufacturer_rate[$i] ?? 0,
             'discount'           => $discount_rate[$i],
             'total_price'        => $total_amount[$i],
@@ -857,6 +917,7 @@ public function retrieve_invoice_editdata($invoice_id)
             'paid_amount'        => $this->input->post('paid_amount'),
             'due_amount'         => $this->input->post('due_amount'),
             'pinvoice_id'        => $inv_id[$i] ?? null, // ✅ Correct usage
+             'stock_id'         => $this->input->post('stock_name'),
 			'expiry_date'        =>$expiry_dates[$i]??null,
         );
 
@@ -977,17 +1038,19 @@ public function retrieve_invoice_editdata($invoice_id)
 	}
 
 	//Get total product
-	public function get_total_product($product_id,$manufacturer_id){
+	public function get_total_product($product_id,$manufacturer_id,$stock_id){
 		$this->db->select('SUM(a.quantity) as total_purchase,b.*');
 		$this->db->from('product_purchase_details a');
 		$this->db->join('product_information b','a.product_id=b.product_id');
 		$this->db->where('a.product_id',$product_id);
+        $this->db->where('a.stock_id',$stock_id);
 		$this->db->where('b.manufacturer_id',$manufacturer_id);
 		$total_purchase = $this->db->get()->row();
 
 		$this->db->select('SUM(b.quantity) as total_sale');
 		$this->db->from('invoice_details b');
 		$this->db->where('b.product_id',$product_id);
+        $this->db->where('b.stock_id',$stock_id);
 		$total_sale = $this->db->get()->row();
 
 		$this->db->select('*');
@@ -1015,15 +1078,17 @@ public function retrieve_invoice_editdata($invoice_id)
 		return $data2;
 	}
 // product information retrieve by product id
-	public function get_total_product_invoic($product_id){
+	public function get_total_product_invoic($product_id,$stock_id){
 		$this->db->select('SUM(a.quantity) as total_purchase');
 		$this->db->from('product_purchase_details a');
 		$this->db->where('a.product_id',$product_id);
+        $this->db->where('a.stock_id',$stock_id);
 		$total_purchase = $this->db->get()->row();
 
 		$this->db->select('SUM(b.quantity) as total_sale');
 		$this->db->from('invoice_details b');
 		$this->db->where('b.product_id',$product_id);
+         $this->db->where('b.stock_id',$stock_id);
 		$total_sale = $this->db->get()->row();
 
 		$this->db->select('*');
@@ -1037,20 +1102,41 @@ public function retrieve_invoice_editdata($invoice_id)
 		$CI->load->model('Web_settings');
 		$CI->load->model('Products');
 		$currency_details = $CI->Web_settings->retrieve_setting_editdata();
-        $content = $CI->Products->batch_search_item($product_id);
+        $content = $CI->Products->batch_search_item($product_id,$stock_id);
 
-        $html = "";
-        if (empty($content)) {
-        	$html .="No Product Found !";
-	    }else{
-	    	// Select option created for product
-	        $html .="<select name=\"batch_id[]\"   class=\"batch_id_1 form-control\" id=\"batch_id_1\" required=\"required\">";
-	        	$html .= "<option>".display('select_one')."</option>";
-	        	foreach ($content as $product) {
-	    			$html .="<option value=".$product['batch_id'].">".$product['batch_id']."</option>";
-	        	}	
-	        $html .="</select>";
-	    }
+       $html = "";
+if (empty($content)) {
+    $html .= "No Product Found!";
+} else {
+    $html .= "<select name=\"batch_id[]\" class=\"batch_id_1 form-control\" id=\"batch_id_1\" required=\"required\">";
+    $html .= "<option>" . display('select_one') . "</option>";
+
+    foreach ($content as $product) {
+        $batch_id = $product['batch_id'];
+        $product_id = $product['product_id'];
+
+        // Calculate available quantity for this batch
+        $total_purchase = $this->db->select_sum('quantity')
+                                   ->where(['product_id' => $product_id, 'batch_id' => $batch_id, 'stock_id' => $stock_id])
+                                   ->get('product_purchase_details')
+                                   ->row()->quantity ?? 0;
+
+        $total_sale = $this->db->select_sum('quantity')
+                               ->where(['product_id' => $product_id, 'batch_id' => $batch_id, 'stock_id' => $stock_id])
+                               ->get('invoice_details')
+                               ->row()->quantity ?? 0;
+
+        $available_qty = $total_purchase - $total_sale;
+
+        // Only display if available quantity > 0
+        if ($available_qty > 0) {
+            $html .= "<option value=\"" . $batch_id . "\">" . $batch_id . " (Qty: " . $available_qty . ")</option>";
+        }
+    }
+
+    $html .= "</select>";
+}
+
 	      $tablecolumn = $this->db->list_fields('tax_collection');
                $num_column = count($tablecolumn)-4;
   $taxfield='';
@@ -1112,7 +1198,7 @@ public function retrieve_invoice_editdata($invoice_id)
 		return $invoice_no;		
 	}
 	// stock availavel by batch id
-	public function get_total_product_batch($batch_id, $product_id)
+	public function get_total_product_batch($batch_id, $product_id,$stock_id)
 {
     $CI =& get_instance();
     $CI->load->model('Web_settings');
@@ -1122,6 +1208,7 @@ public function retrieve_invoice_editdata($invoice_id)
     $this->db->from('product_purchase_details a');
     $this->db->where('a.batch_id', $batch_id);
     $this->db->where('a.product_id', $product_id); // ✅ fixed alias
+     $this->db->where('a.stock_id', $stock_id); 
     $this->db->order_by('a.id', 'desc');
     $total_purchase = $this->db->get()->row();
 
@@ -1130,6 +1217,7 @@ public function retrieve_invoice_editdata($invoice_id)
     $this->db->from('invoice_details b');
     $this->db->where('b.batch_id', $batch_id);
     $this->db->where('b.product_id', $product_id);
+    $this->db->where('b.stock_id', $stock_id); 
     $total_sale = $this->db->get()->row();
 
     // 🔹 Safe values if no rows found
@@ -1223,16 +1311,25 @@ public function retrieve_invoice_editdata($invoice_id)
         return false;
     }
 
-    	public function autocompletproductdata($product_name){
-		$query=$this->db->select('*')
-				->from('product_information')
-				->like('product_name', $product_name, 'after')
-				->order_by('product_name','asc')
-				->limit(15)
-				->get();
+	public function autocompletproductdata($product_name, $stock_id) {
+		$this->db->select('pi.*, ppd.stock_id, ppd.purchase_id, ppd.quantity, ppd.rate')
+    ->from('product_information pi')
+    ->join('product_purchase_details ppd', 'ppd.product_id = pi.product_id')
+    ->like('pi.product_name', $product_name, 'after') // search products starting with name
+    ->where('ppd.stock_id', $stock_id) // filter by stock
+    ->group_by('pi.product_id') // ensure each product appears once
+    ->order_by('pi.product_name', 'asc')
+    ->limit(15);
+
+$query = $this->db->get();
+return $query->result_array();
+
+	
 		if ($query->num_rows() > 0) {
-			return $query->result_array();	
+			return $query->result_array();
 		}
 		return false;
 	}
+	
+	
 }

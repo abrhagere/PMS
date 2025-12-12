@@ -13,17 +13,17 @@
             $Web_settings = $CI->Web_settings->retrieve_setting_editdata();
         ?>
         <!-- Favicon and touch icons -->
-        <link rel="shortcut icon" href="<?php if (isset($Web_settings[0]['logo'])) {
-               echo $Web_settings[0]['favicon']; }?>" type="image/x-icon">
+        <link rel="shortcut icon" href="<?php if (isset($Web_settings[0]['favicon'])) {
+               echo (strpos($Web_settings[0]['favicon'], 'http') === 0) ? $Web_settings[0]['favicon'] : base_url($Web_settings[0]['favicon']); }?>" type="image/x-icon">
         <link rel="apple-touch-icon" type="image/x-icon" href="<?php echo base_url()?>assets/dist/img/ico/apple-touch-icon-57-precomposed.png">
         <link rel="apple-touch-icon" type="image/x-icon" sizes="72x72" href="<?php echo base_url()?>assets/dist/img/ico/apple-touch-icon-72-precomposed.png">
         <link rel="apple-touch-icon" type="image/x-icon" sizes="114x114" href="<?php echo base_url()?>assets/dist/img/ico/apple-touch-icon-114-precomposed.png">
         <link rel="apple-touch-icon" type="image/x-icon" sizes="144x144" href="<?php echo base_url()?>assets/dist/img/ico/apple-touch-icon-144-precomposed.png">
         <!-- Start Global Mandatory Style-->
         <!-- start icheck css -->
-        <link href="<?php echo base_url() ?>assets/plugins/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet" type="text/css"/>
+        <link href="<?php echo base_url()?>assets/plugins/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet" type="text/css"/>
         <!-- jquery-ui css -->
-        <link href="<?php echo base_url() ?>assets/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
+        <link href="<?php echo base_url()?>assets/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
        <!--  <link href="<?php echo base_url()?>assets/plugins/jquery-ui-1.12.1/jquery-ui.min.css" rel="stylesheet" type="text/css"/> -->
         <!-- Bootstrap -->
         <link href="<?php echo base_url()?>assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
@@ -111,10 +111,10 @@
         <!-- Modal js -->
         <script src="<?php echo base_url()?>assets/plugins/modals/classie.js" type="text/javascript"></script>
         <script src="<?php echo base_url()?>assets/plugins/modals/modalEffects.js" type="text/javascript"></script>
-    <script src="<?php echo base_url() ?>assets/js/select2.min.js" type="text/javascript"></script>
+    <script src="<?php echo base_url()?>assets/js/select2.min.js" type="text/javascript"></script>
     
-         <script src="<?php echo base_url() ?>assets/js/jstree.js" type="text/javascript"></script>
-  <script src="<?php echo base_url() ?>assets/js/TreeMenu.js" type="text/javascript"></script>
+         <script src="<?php echo base_url()?>assets/js/jstree.js" type="text/javascript"></script>
+  <script src="<?php echo base_url()?>assets/js/TreeMenu.js" type="text/javascript"></script>
        
         <script type="text/javascript">
         $(document).ready(function(){

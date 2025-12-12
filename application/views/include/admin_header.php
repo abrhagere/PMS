@@ -3,7 +3,6 @@
     $CI->load->model('Web_settings');
     $CI->load->model('Reports');
     $CI->load->model('Users');
-
     $Web_settings = $CI->Web_settings->retrieve_setting_editdata();
     $users = $CI->Users->profile_edit_data();
     $out_of_stock = $CI->Reports->out_of_stock_count();
@@ -20,12 +19,12 @@
         <span class="logo-mini">
             <!--<b>A</b>BD-->
             <img src="<?php if (isset($Web_settings[0]['favicon'])) {
-               echo $Web_settings[0]['favicon']; }?>" alt="">
+               echo (strpos($Web_settings[0]['favicon'], 'http') === 0) ? $Web_settings[0]['favicon'] : base_url($Web_settings[0]['favicon']); }?>" alt="">
         </span>
         <span class="logo-lg">
             <!--<b>Admin</b>BD-->
             <img src="<?php if (isset($Web_settings[0]['logo'])) {
-               echo $Web_settings[0]['logo']; }?>" alt="">
+               echo (strpos($Web_settings[0]['logo'], 'http') === 0) ? $Web_settings[0]['logo'] : base_url($Web_settings[0]['logo']); }?>" alt="">
         </span>
     </a>
     <!-- Header Navbar -->
@@ -102,7 +101,7 @@
         <!-- Sidebar user panel -->
         <div class="user-panel text-center">
             <div class="image">
-                <img src="<?php echo $users[0]['logo']?>" class="img-circle" alt="User Image">
+                <img src="<?php echo (!empty($users[0]['logo']) && strpos($users[0]['logo'], 'http') === 0) ? $users[0]['logo'] : base_url((!empty($users[0]['logo']) ? $users[0]['logo'] : 'assets/dist/img/profile_picture/default.png')); ?>" class="img-circle" alt="User Image">
             </div>
             <div class="info">
                 <p><?php echo $this->session->userdata('user_name')?></p>
@@ -425,40 +424,86 @@
             <!-- Purchase menu end -->
              <!-- stock menu start -->
               <?php
-            if($this->permission1->module('stock_report')->access() || $this->permission1->module('stock_report_manufacturer_wise')->access() || $this->permission1->module('stock_report_product_wise')->access() || $this->permission1->module('stock_report_batch_wise')->access()){ ?>
-            <!-- Stock menu start -->
-            <li class="treeview <?php if ($this->uri->segment('1') == ("Creport")) { echo "active";}else{ echo " ";}?>">
-                <a href="#">
-                    <i class="ti-bar-chart"></i><span><?php echo display('stock') ?></span>
-                    <span class="pull-right-container">
-                        <i class="fa fa-angle-left pull-right"></i>
-                    </span>
-                </a>
-                <ul class="treeview-menu">
-                    <?php
-                    if($this->permission1->method('stock_report','read')->access()){ ?>
-                      <li class="treeview <?php  if ($this->uri->segment('1') == ("Creport") && $this->uri->segment('2') == ("")){
-                        echo "active";
-                    } else {
-                        echo " ";
-                    }?>"><a href="<?php echo base_url('Creport')?>"><?php echo display('stock_report') ?></a></li>
-                    <?php } ?>
+if (
+    $this->permission1->module('stock_report')->access() ||
+    $this->permission1->module('stock_report_manufacturer_wise')->access() ||
+    $this->permission1->module('stock_report_product_wise')->access() ||
+    $this->permission1->module('stock_report_batch_wise')->access() ||
+    $this->permission1->module('create_stock')->access() ||
+    $this->permission1->module('manage_stock')->access()
+) { ?>
+    <!-- Stock menu start -->
+    <li class="treeview <?php echo ($this->uri->segment(1) == 'Creport') ? 'active' : ''; ?>">
+        <a href="#">
+            <i class="ti-bar-chart"></i><span><?php echo display('stock'); ?></span>
+            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+            </span>
+        </a>
 
-                
+        <ul class="treeview-menu">
 
-                    <?php
-                    if($this->permission1->method('stock_report_batch_wise','read')->access()){ ?>
-                      <li class="treeview <?php  if ($this->uri->segment('2') == ("stock_report_batch_wise")){
-                        echo "active";
-                    } else {
-                        echo " ";
-                    }?>"><a href="<?php echo base_url('Creport/stock_report_batch_wise')?>"><?php echo display('stock_report_batch_wise') ?></a></li>
-                    <?php } ?>
-                </ul>
-            </li>
-           <?php
-             }
-           ?>
+            <!-- Create stock -->
+            <?php if ($this->permission1->method('create_stock', 'create')->access()) { ?>
+                <li class="<?php echo ($this->uri->segment(1) == 'Creport' && $this->uri->segment(2) == 'create_stock') ? 'active' : ''; ?>">
+                    <a href="<?php echo base_url('Creport/create_stock'); ?>">
+                        <?php echo display('create_stock'); ?>
+                    </a>
+                </li>
+            <?php } ?>
+
+            <!-- Manage stock -->
+            <?php if ($this->permission1->method('manage_stock', 'read')->access()) { ?>
+                <li class="<?php echo ($this->uri->segment(1) == 'Creport' && $this->uri->segment(2) == 'manage_report') ? 'active' : ''; ?>">
+                    <a href="<?php echo base_url('Creport/manage_stock'); ?>">
+                        <?php echo display('manage_stock'); ?>
+                    </a>
+                </li>
+            <?php } ?>
+            <!-- stock transfer-->
+             <!-- Manage stock -->
+            <?php if ($this->permission1->method('stock_transfer', 'create')->access()) { ?>
+                <li class="<?php echo ($this->uri->segment(1) == 'Creport' && $this->uri->segment(2) == 'stock_transfer') ? 'active' : ''; ?>">
+                    <a href="<?php echo base_url('Creport/stock_transfer'); ?>">
+                        <?php echo display('stock_transfer'); ?>
+                    </a>
+                </li>
+            <?php } ?>
+            <!-- stock transfer history-->
+             <?php if ($this->permission1->method('stock_transfer_history', 'read')->access()) { ?>
+                <li class="<?php echo ($this->uri->segment(1) == 'Creport' && $this->uri->segment(2) == 'stock_transfer_history') ? 'active' : ''; ?>">
+                    <a href="<?php echo base_url('Creport/stock_transfer_history'); ?>">
+                        <?php echo display('stock_transfer_history'); ?>
+                    </a>
+                </li>
+            <?php } ?>
+            <!-- stock transfer history-->
+
+
+
+            <!-- stock transfer-->
+
+            <!-- Stock report -->
+            <?php if ($this->permission1->method('stock_report', 'read')->access()) { ?>
+                <li class="<?php echo ($this->uri->segment(1) == 'Creport' && ($this->uri->segment(2) == '' || $this->uri->segment(2) == 'index')) ? 'active' : ''; ?>">
+                    <a href="<?php echo base_url('Creport'); ?>">
+                        <?php echo display('stock_report'); ?>
+                    </a>
+                </li>
+            <?php } ?>
+
+            <!-- Stock report batch wise -->
+            <?php if ($this->permission1->method('stock_report_batch_wise', 'read')->access()) { ?>
+                <li class="<?php echo ($this->uri->segment(1) == 'Creport' && $this->uri->segment(2) == 'stock_report_batch_wise') ? 'active' : ''; ?>">
+                    <a href="<?php echo base_url('Creport/stock_report_batch_wise'); ?>">
+                        <?php echo display('stock_report_batch_wise'); ?>
+                    </a>
+                </li>
+            <?php } ?>
+
+        </ul>
+    </li>
+<?php } ?>
             <!-- Stock menu end -->
               <!-- start return -->
            <?php
@@ -598,6 +643,145 @@
             </li>
             <?php } ?>
             <!-- Report menu end -->
+            
+            <!-- Clinic Management Menu start -->
+            <?php
+            if($this->permission1->module('clinic_dashboard')->access() || 
+               $this->permission1->module('patients')->access() || 
+               $this->permission1->module('appointments')->access() || 
+               $this->permission1->module('consultations')->access() || 
+               $this->permission1->module('vitals')->access() || 
+               $this->permission1->module('prescriptions')->access() || 
+               $this->permission1->module('lab_orders')->access()) { ?>
+                <li class="treeview <?php if ($this->uri->segment('1') == ("clinic") || 
+                                           $this->uri->segment('1') == ("patients") || 
+                                           $this->uri->segment('1') == ("appointments") || 
+                                           $this->uri->segment('1') == ("consultations") || 
+                                           $this->uri->segment('1') == ("vitals") || 
+                                           $this->uri->segment('1') == ("prescriptions") || 
+                                           $this->uri->segment('1') == ("lab")) { 
+                                           echo "active";
+                                       } else { 
+                                           echo " "; 
+                                       }?>">
+                    <a href="#">
+                        <i class="fa fa-hospital-o"></i><span>Clinic Management</span>
+                        <span class="pull-right-container">
+                            <i class="fa fa-angle-left pull-right"></i>
+                        </span>
+                    </a>
+                    <ul class="treeview-menu">
+                        <!-- Clinic Dashboard -->
+                        <?php if($this->permission1->module('clinic_dashboard')->access()) { ?>
+                            <li class="<?php echo ($this->uri->segment('1') == 'clinic' && $this->uri->segment('2') == 'dashboard') ? 'active' : ''; ?>">
+                                <a href="<?php echo base_url('clinic/dashboard'); ?>">
+                                    <i class="fa fa-dashboard"></i> Clinic Dashboard
+                                </a>
+                            </li>
+                        <?php } ?>
+                        
+                        <!-- Patient Management -->
+                        <?php if($this->permission1->module('patients')->access()) { ?>
+                            <li class="treeview <?php echo ($this->uri->segment('1') == 'patients') ? 'active' : ''; ?>">
+                                <a href="#">
+                                    <i class="fa fa-users"></i> Patient Management
+                                    <span class="pull-right-container">
+                                        <i class="fa fa-angle-left pull-right"></i>
+                                    </span>
+                                </a>
+                                <ul class="treeview-menu">
+                                    <?php if($this->permission1->method('patients','read')->access()) { ?>
+                                        <li><a href="<?php echo base_url('patients'); ?>"><i class="fa fa-list"></i> Patient List</a></li>
+                                    <?php } ?>
+                                    <?php if($this->permission1->method('patients','create')->access()) { ?>
+                                        <li><a href="<?php echo base_url('patients/add'); ?>"><i class="fa fa-plus"></i> Add New Patient</a></li>
+                                    <?php } ?>
+                                </ul>
+                            </li>
+                        <?php } ?>
+                        
+                        <!-- Appointments -->
+                        <?php if($this->permission1->module('appointments')->access()) { ?>
+                            <li class="treeview <?php echo ($this->uri->segment('1') == 'appointments') ? 'active' : ''; ?>">
+                                <a href="#">
+                                    <i class="fa fa-calendar"></i> Appointments
+                                    <span class="pull-right-container">
+                                        <i class="fa fa-angle-left pull-right"></i>
+                                    </span>
+                                </a>
+                                <ul class="treeview-menu">
+                                    <?php if($this->permission1->method('appointments','read')->access()) { ?>
+                                        <li><a href="<?php echo base_url('appointments'); ?>"><i class="fa fa-list"></i> Appointment List</a></li>
+                                    <?php } ?>
+                                    <?php if($this->permission1->method('appointments','create')->access()) { ?>
+                                        <li><a href="<?php echo base_url('appointments/book'); ?>"><i class="fa fa-plus"></i> Book Appointment</a></li>
+                                    <?php } ?>
+                                    <?php if($this->permission1->method('appointments','read')->access()) { ?>
+                                        <li><a href="<?php echo base_url('appointments/calendar'); ?>"><i class="fa fa-calendar-o"></i> Calendar View</a></li>
+                                    <?php } ?>
+                                </ul>
+                            </li>
+                        <?php } ?>
+                        
+                        <!-- Consultations -->
+                        <?php if($this->permission1->module('consultations')->access()) { ?>
+                            <li class="<?php echo ($this->uri->segment('1') == 'consultations') ? 'active' : ''; ?>">
+                                <a href="<?php echo base_url('consultations'); ?>">
+                                    <i class="fa fa-stethoscope"></i> Consultations
+                                </a>
+                            </li>
+                        <?php } ?>
+                        
+                        <!-- Vitals / Nurse Station -->
+                        <?php if($this->permission1->module('vitals')->access()) { ?>
+                            <li class="<?php echo ($this->uri->segment('1') == 'vitals') ? 'active' : ''; ?>">
+                                <a href="<?php echo base_url('vitals'); ?>">
+                                    <i class="fa fa-heartbeat"></i> Vitals / Nurse Station
+                                </a>
+                            </li>
+                        <?php } ?>
+                        
+                        <!-- Prescriptions -->
+                        <?php if($this->permission1->module('prescriptions')->access()) { ?>
+                            <li class="treeview <?php echo ($this->uri->segment('1') == 'prescriptions') ? 'active' : ''; ?>">
+                                <a href="#">
+                                    <i class="fa fa-file-text"></i> Prescriptions
+                                    <span class="pull-right-container">
+                                        <i class="fa fa-angle-left pull-right"></i>
+                                    </span>
+                                </a>
+                                <ul class="treeview-menu">
+                                    <?php if($this->permission1->method('prescriptions','read')->access()) { ?>
+                                        <li><a href="<?php echo base_url('prescriptions'); ?>"><i class="fa fa-list"></i> Prescription List</a></li>
+                                    <?php } ?>
+                                </ul>
+                            </li>
+                        <?php } ?>
+                        
+                        <!-- Laboratory -->
+                        <?php if($this->permission1->module('lab_orders')->access()) { ?>
+                            <li class="treeview <?php echo ($this->uri->segment('1') == 'lab') ? 'active' : ''; ?>">
+                                <a href="#">
+                                    <i class="fa fa-flask"></i> Laboratory
+                                    <span class="pull-right-container">
+                                        <i class="fa fa-angle-left pull-right"></i>
+                                    </span>
+                                </a>
+                                <ul class="treeview-menu">
+                                    <?php if($this->permission1->method('lab_orders','read')->access()) { ?>
+                                        <li><a href="<?php echo base_url('lab/orders'); ?>"><i class="fa fa-list"></i> Lab Orders</a></li>
+                                    <?php } ?>
+                                    <?php if($this->permission1->method('lab_orders','create')->access()) { ?>
+                                        <li><a href="<?php echo base_url('lab/orders/new'); ?>"><i class="fa fa-plus"></i> New Lab Order</a></li>
+                                    <?php } ?>
+                                </ul>
+                            </li>
+                        <?php } ?>
+                    </ul>
+                </li>
+            <?php } ?>
+            <!-- Clinic Management Menu end -->
+            
             <!--New Account start-->
  <?php if($this->permission1->method('show_tree','read')->access() || $this->permission1->method('manufacturer_payment','create')->access()|| $this->permission1->method('customer_receive','create')->access() || $this->permission1->method('debit_voucher','create')->access() || $this->permission1->method('credit_voucher','create')->access() || $this->permission1->method('aprove_v','read')->access() || $this->permission1->method('contra_voucher','create')->access() || $this->permission1->method('journal_voucher','create')->access()){?>
             <li class="treeview <?php

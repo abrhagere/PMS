@@ -14,7 +14,6 @@
             </ol>
         </div>
     </section>
-
     <section class="content">
 
         <!-- Alert Message -->
@@ -83,15 +82,7 @@
                         <div class="form-group row">
                             <label for="employee_id" class="col-sm-3 col-form-label"><?php echo display('employee_name') ?> *</label>
                             <div class="col-sm-9">
-                       <?php  if($this->session->userdata('isAdmin')==1){?> 
-                              <?php echo form_dropdown('employee_id',$dropdownatn,null,'class="form-control" id="employee_id" style="width:300px"') ?>
-                              <?php }else{?> 
-                                <input type="text" name="employee_name" class="form-control" value="<?php echo $this->session->userdata('first_name').' '.$this->session->userdata('last_name');?>" readonly>
-                                 <input type="hidden" name="employee_id" id="employee_id" class="form-control" value="<?php echo $this->session->userdata('employee_id');?>">
-                               <?php }?>
-
-
-                               
+                      <?php echo form_dropdown('employee_id', $dropdownatn, $this->session->userdata('employee_id'), 'class="form-control" id="employee_id" style="width:300px"'); ?>
                             </div>
                         </div>          
                         <div class="form-group text-center">
@@ -179,55 +170,65 @@
             <div class="panel-body">
                
   <table width="100%" class="datatable table table-striped table-bordered table-hover example">
-                <caption><?php echo display('attendance_list')?></caption>
-                <thead>
-                    <tr>
-                      <th><?php echo display('Sl') ?></th>
-                        <th><?php echo display('name')?></th>
-                        <th><?php echo display('date')?></th>
-                        <th><?php echo display('checkin')?></th>
-                        <th><?php echo display('checkout')?></th>
-                        <th><?php echo display('stay')?></th>
-                         <th><?php echo display('action')?></th>
-                         
-                    </tr>
-                </thead>
-                <tbody>
-                    <?php if ($att_list == FALSE): ?>
-
-                        <tr><td colspan="8" class="text-center">There are currently No Attendance</td></tr>
-                    <?php else: ?>
-                         <?php $sl = 1; ?> 
-                        <?php foreach ($att_list as $row): ?>
-                            <tr class="<?php echo ($sl & 1)?"odd gradeX":"even gradeC" ?>">
-                            <td><?php echo $sl; ?></td>
-                                <td><?php echo $row['first_name'].' '.$row['last_name']; ?></td>
-                                <td><?php echo $row['date']; ?></td>
-                                <td><?php echo $row['sign_in']; ?></td>
-                                <td><?php echo $row['sign_out']; ?></td>
-                                <td><?php echo $row['staytime']; ?></td>
-                                
-                                <td> 
-                                <?php if($row['staytime']==''){
-                                    $id=$row["att_id"];
-                                    ?>
-                                   <a href='#' class='btn btn-success' onclick='signoutmodal(<?php echo $id; ?>,"<?php echo $row['sign_in']; ?>")'><i class='fa fa-clock-o' aria-hidden='true'></i> <?php echo display('checkout') ?></a>
-                                  <?php  } 
-                                    else {
-                                        echo 'Checked Out';
-                                    }
-
-                                        ?> 
-
-                                </td>
-                               
-                            </tr>
-                              <?php $sl++; ?>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                </tbody>
-            </table>
-
+    <caption><?php echo display('attendance_list')?></caption>
+    <thead>
+        <tr>
+            <th><?php echo display('Sl') ?></th>
+            <th><?php echo display('stock_name') ?></th>
+            <th><?php echo display('name')?></th>
+            <th><?php echo display('date')?></th>
+            <th><?php echo display('checkin')?></th>
+            <th><?php echo display('checkout')?></th>
+            <th><?php echo display('stay')?></th>
+            <th><?php echo display('action')?></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php if ($att_list == FALSE): ?>
+            <?php for($i=0;$i<1;$i++): // add empty row to keep columns consistent ?>
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            <?php endfor; ?>
+        <?php else: ?>
+            <?php $sl = 1; ?> 
+            <?php foreach ($att_list as $row): ?>
+                <tr class="<?php echo ($sl & 1)?"odd gradeX":"even gradeC" ?>">
+                    <td><?php echo $sl; ?></td>
+                    <td><?php echo $row['stock_name']; ?></td>
+                    <td><?php echo $row['first_name'].' '.$row['last_name']; ?></td>
+                    <td><?php echo $row['date']; ?></td>
+                    <td><?php echo $row['sign_in']; ?></td>
+                    <td><?php echo $row['sign_out']; ?></td>
+                    <td class="staytime"><?php echo $row['staytime']; ?></td>
+                    <td> 
+                        <?php if($row['staytime']==''){
+                            $id=$row["att_id"];
+                        ?>
+                            <a href='#' class='btn btn-success' onclick='signoutmodal(<?php echo $id; ?>,"<?php echo $row['sign_in']; ?>")'>
+                            <i class='fa fa-clock-o' aria-hidden='true'></i> <?php echo display('checkout') ?></a>
+                        <?php  } else { echo 'Checked Out'; } ?> 
+                    </td>
+                </tr>
+                <?php $sl++; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
+    </tbody>
+    <tfoot>
+        <tr>
+            <th colspan="6" style="text-align:right"><?php echo display('total_stay') ?>:</th>
+            <th id="totalStay"></th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>
 
                 <!-- /.table-responsive -->
             </div>
@@ -359,4 +360,52 @@ var today = new Date(indianTimeZoneVal);
 }
 startTime();
 </script>
+<script>
+$(document).ready(function() {
+    var table = $('.datatable').DataTable({
+        "paging": true,
+        "searching": true,
+        "ordering": true,
+        "order": [[ 0, "asc" ]],
+        "lengthMenu": [10, 25, 50, 100],
+        "columnDefs": [
+            { "orderable": false, "targets": 7 } // Disable sorting on 'Action' column
+        ],
+        "footerCallback": function ( row, data, start, end, display ) {
+            var api = this.api();
+
+            var totalStay = 0;
+
+            // Use column index for "stay" column, here it's index 6
+            api.column(6, { page: 'current' }).nodes().each(function(cell, i) {
+                if(cell) {
+                    var val = $(cell).text().trim();
+                    if(val){
+                        var arr = val.split(':');
+                        if(arr.length === 3){
+                            // hh:mm:ss to seconds
+                            totalStay += parseInt(arr[0])*3600 + parseInt(arr[1])*60 + parseInt(arr[2]);
+                        } else if(!isNaN(parseInt(val))){
+                            totalStay += parseInt(val);
+                        }
+                    }
+                }
+            });
+
+            function secondsToHms(d) {
+                d = Number(d);
+                var h = Math.floor(d / 3600);
+                var m = Math.floor(d % 3600 / 60);
+                var s = Math.floor(d % 60);
+                return ((h>0?h+":":"") + (m<10?"0"+m:m) + ":" + (s<10?"0"+s:s));
+            }
+
+            // Set total in footer cell
+            $(api.column(6).footer()).html(secondsToHms(totalStay));
+        }
+    });
+});
+</script>
+
+
 

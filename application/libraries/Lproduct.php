@@ -184,6 +184,7 @@ class Lproduct {
 				$purchaseData[$k]['final_date'] = $CI->occational->dateConvert($purchaseData[$k]['purchase_date']);
 				$totalPrcsAmnt = ($totalPrcsAmnt + $purchaseData[$k]['total_amount']);
 				$totalPurchase = ($totalPurchase + $purchaseData[$k]['quantity']);
+				$purchaseData[$k]['stock_name'] = $v['stock_name'];
 			}
 		}
 
@@ -197,6 +198,7 @@ $totalPaidProfit = 0;
 			foreach($salesData as $k=>$v){
 				$salesData[$k]['final_date'] = $CI->occational->dateConvert($salesData[$k]['date']);
 				$totalSales = ($totalSales + $salesData[$k]['quantity']);
+				$salesData[$k]['stock_name'] = $v['stock_name'];
 				$totaSalesAmt = ($totaSalesAmt + $salesData[$k]['total_price']);
 				$salesData[$k]['paid_amount_formatted'] = number_format($v['paid_amount'], 2, '.', ',');
 				 $due = $v['total_price'] - $v['paid_amount'];
@@ -217,6 +219,7 @@ $totalPaidProfit = 0;
 		$data = array(
 				'title'					=> display('product_report'),
 				'product_name' 			=> $details_info[0]['product_name'],
+				'stock_name'            =>$stock_name,
 				'product_model' 		=> $details_info[0]['product_model'],
 				'price'					=> $details_info[0]['price'],
 				'purchaseTotalAmount'	=> number_format($totalPrcsAmnt, 2, '.', ','),

@@ -78,6 +78,30 @@
                            <input name="myDate" class="monthYearPicker form-control" placeholder="Select Salary Month" required="" />
                            
                             </div>
+                            
+                            </div>
+                            <div class="form-group row">
+                                 <label for="stock_name" class="col-sm-3 col-form-label"><?php echo display('stock') ?>* </label>
+                                <div class="col-sm-6">
+                               
+                                <select name="stock_name" id="stock_id" class="form-control" required tabindex="1" required> 
+                                     <option value=""><?php echo display('select_stock'); ?></option>
+                                           <?php 
+                                           if (!empty($all_stock) && is_array($all_stock)) { 
+                                               foreach ($all_stock as $specific_stock) {
+                                           ?>
+                                               <option value="<?php echo $specific_stock['id']; ?>">
+                                                   <?php echo $specific_stock['stock_name']; ?>
+                                               </option>
+                                           <?php
+                                               }
+                                           } else {
+                                             echo '<option value="">No stocks assigned</option>';
+                                           }
+                                           ?>
+                        </select>
+                            </div>
+
                             </div>
                         <div class="form-group text-center">
                             <button type="reset" class="btn btn-primary w-md m-b-5"><?php echo display('reset') ?></button>

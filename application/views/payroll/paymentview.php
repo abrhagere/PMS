@@ -24,7 +24,7 @@
             ?>
             <div class="alert alert-info alert-dismissable">
                 <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                <?php echo $message ?>                    
+                    successfully Inserted                 
             </div>
             <?php
             $this->session->unset_userdata('message');
@@ -49,12 +49,24 @@
         <div class="panel panel-default thumbnail"> 
 
             <div class="panel-body">
+                <div class="col-sm-3">
+        <input type="text" id="from_date" class="form-control datepicker" placeholder="From Payment Date">
+    </div>
+     <div class="col-sm-3">
+        <input type="text" id="to_date" class="form-control datepicker" placeholder="To Payment Date">
+    </div>
+    <div class="col-sm-3">
+        <button id="btn_filter" class="btn btn-success">Filter</button>
+       
+    </div>
+                <br><br><br>
                 
 
                 <table width="100%" class="datatable table table-striped table-bordered table-hover">
                     <thead>
                         <tr>
                                     <th><?php echo display('Sl') ?></th>
+                                    <th><?php echo display('stock_name') ?></th>
                                     <th><?php echo display('employee_name') ?></th>
                                     <th><?php echo display('salary_month') ?></th>
                                     <th><?php echo display('total_working_minutes') ?></th>
@@ -80,6 +92,7 @@
                             <?php foreach ($emp_pay as $que) { ?>
                                 <tr class="<?php echo ($sl & 1)?"odd gradeX":"even gradeC" ?>">
                                         <td><?php echo $sl; ?></td>
+                                        <td><?php echo $que->stock_name; ?></td>
                                         <td><?php echo $que->first_name.' '.$que->last_name; ?></td>
                                          <td><?php echo $que->salary_month; ?></td>
                                         <td><?php echo $que->total_working_minutes; ?></td>
@@ -265,6 +278,41 @@ $(document).ready(function() {
     // Filter Employee Name column (column index 1)
     $('#employee_search').on('keyup', function() {
         table.column(1).search(this.value).draw();
+    });
+     $('#btn_filter').click(function() {
+        var from_date = $('#from_date').val();
+        var to_date   = $('#to_date').val();
+
+        $.ajax({
+            url: "<?php echo base_url('Cpayroll/salary_payment') ?>",
+            type: "POST",
+            dataType: "json",
+            data: {from_date: from_date, to_date: to_date},
+            success: function(data){
+                table.clear().draw();
+                var sl = 1;
+                data.forEach(function(row){
+                    var action = row.payment_due=='paid' ? 'Paid' : `<a href='#' class='btn btn-success btn-xs' onclick='Payment(${row.emp_sal_pay_id},"${row.employee_id}","${row.total_salary}","${row.total_working_minutes}","${row.working_period}","${row.salary_month}")'>Pay Now</a>`;
+                    table.row.add([
+                        sl,
+                        row.stock_name,
+                        row.first_name+' '+row.last_name,
+                        row.salary_month,
+                        row.total_working_minutes,
+                        row.working_period,
+                        row.total_salary,
+                        row.payment_due,
+                        row.payment_date,
+                        row.paid_by,
+                        action
+                    ]).draw(false);
+                    sl++;
+                });
+            },
+            error: function(){
+                alert('Failed to fetch filtered data!');
+            }
+        });
     });
 });
 </script>

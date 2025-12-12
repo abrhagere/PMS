@@ -8,11 +8,18 @@ class Linvoice {
         $CI->load->model('Invoices');
         $CI->load->model('Web_settings');
         $CI->load->library('occational');
+		// ✅ Get logged-in user ID safely
+		$CI->load->model('Stocks');
+		$user_id = $CI->session->userdata('user_id');
+		//$user_id = $CI->session->userdata('user_id');
+		// ✅ Load only stocks assigned to this user
+		$all_stock = $CI->Stocks->get_stocks_assigned_to_user($user_id);
         $company_info = $CI->Invoices->retrieve_company();
         $data = array(
             'title'         => display('manage_invoice'),
             'total_invoice' => $CI->Invoices->count_invoice(),
             'company_info'  => $company_info,
+			'all_stock'  => $all_stock,
         );
         $invoiceList = $CI->parser->parse('invoice/invoice', $data, true);
         return $invoiceList;
@@ -150,10 +157,14 @@ public function invoice_list_invoice_no($invoice_no)
 	{
 		$CI =& get_instance();
 		$CI->load->model('Invoices');
+		$CI->load->model('Stocks');
 		$CI->load->model('Web_settings');
 		$currency_details = $CI->Web_settings->retrieve_setting_editdata();
 		$customer_details = $CI->Invoices->pos_customer_setup();
 		$bank_list        = $CI->Web_settings->bank_list();
+		$user_id = $CI->session->userdata('user_id');
+		$all_stock = $CI->Stocks->get_stocks_assigned_to_user($user_id);
+
 		 $taxfield = $CI->db->select('tax_name,default_value')
                 ->from('tax_settings')
                 ->get()
@@ -164,7 +175,8 @@ public function invoice_list_invoice_no($invoice_no)
 				'customer_id' 	=> $customer_details[0]['customer_id'],
 				'discount_type' => $currency_details[0]['discount_type'],
 				'taxes'         => $taxfield,
-				'bank_list'     => $bank_list
+				'bank_list'     => $bank_list,
+				'all_stock'        => $all_stock,
 			);
 		$invoiceForm = $CI->parser->parse('invoice/add_invoice_form',$data,true);
 		return $invoiceForm;
@@ -180,7 +192,7 @@ public function invoice_list_invoice_no($invoice_no)
 
 	//Invoice Edit Data
 public function invoice_edit_data($invoice_id)
-{
+ {
     $CI =& get_instance();
     $CI->load->model('Invoices');
     $CI->load->model('Web_settings');
@@ -226,6 +238,8 @@ public function invoice_edit_data($invoice_id)
         'customer_id'       => $invoice_detail[0]['customer_id'] ?? 0,
         'customer_name'     => $invoice_detail[0]['customer_name'] ?? '',
         'date'              => $invoice_detail[0]['date'] ?? '',
+		'stock_id'              => $invoice_detail[0]['stock_id'] ?? '',
+		'stock_name'              => $invoice_detail[0]['stock_name'] ?? '',
         'invoice_details'   => $invoice_detail[0]['invoice_details'] ?? '',
         'total_amount'      => $invoice_detail[0]['total_amount'] ?? 0,
         'paid_amount'       => $invoice_detail[0]['paid_amount'] ?? 0,

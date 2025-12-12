@@ -1,0 +1,54 @@
+# CodeIgniter
+application/config/database.php
+application/config/config.php
+application/logs/*
+!application/logs/index.html
+application/cache/*
+!application/cache/index.html
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
+*.cache
+
+# Upload directories (keep structure, ignore content)
+assets/images/patients/*
+!assets/images/patients/index.html
+assets/images/uploads/*
+!assets/images/uploads/index.html
+
+# Session files
+application/ci_sessions/*
+!application/ci_sessions/index.html
+
+# Vendor (if using composer)
+/vendor/
+
+# Node modules (if using npm)
+node_modules/
+
+# Backup files
+*.bak
+*.backup
+*.sql.gz
+*.sql.bak
+
+# Install directory (if exists)
+install/
+

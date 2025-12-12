@@ -129,6 +129,7 @@ public function get_total_assets($asset_item_code,$store_code) {
 
     $item_c = $this->input->post('item_code');
     $supplier_id = $this->input->post('supplier_id');
+     $stock_id = $this->input->post('stock_name');
     $supinfo =$this->db->select('*')->from('supplier_information')->where('supplier_id',$supplier_id)->get()->row();
     $sup_head = $supinfo->supplier_name.'-'.$supinfo->supplier_id;
     $sup_coa = $this->db->select('*')->from('acc_coa')->where('HeadName',$sup_head)->get()->row();
@@ -143,6 +144,7 @@ public function get_total_assets($asset_item_code,$store_code) {
         $data = array(
             'p_date'             => $this->input->post('purchase_date'),
             'supplier_id'    => $this->input->post('supplier_id'),
+            'stock_id'    => $this->input->post('stock_name'),
             'grand_total'        => $this->input->post('grand_total_price'),
             'payment_type'       => $payment_type,
             'bank_id'            => $bank_id,
@@ -610,18 +612,40 @@ public function retrieve_asset_purchase_detailsdata($purchase_id){
     }
 
     // Assets Purchase list
-    public function asset_purchase_list($per_page, $page) {
-        $query = $this->db->select('a.*,b.supplier_name')
-                ->from('asset_purchase a')
-                ->join('supplier_information b','a.supplier_id = b.supplier_id')
-                ->order_by('a.id', 'desc')
-                ->limit($per_page, $page)
-                ->get();
-        if ($query->num_rows() > 0) {
-            return $query->result_array();
-        }
-        return false;
+   public function asset_purchase_list($per_page, $page, $user_id = null) {
+    $CI =& get_instance();
+     $CI->load->model('Stocks');
+		$user_id = $CI->session->userdata('user_id');
+		//$user_id = $CI->session->userdata('user_id');
+		// ✅ Load only stocks assigned to this user
+		$all_stock = $CI->Stocks->get_stocks_assigned_to_user($user_id);
+    $this->db->select('a.*, b.supplier_name, s.stock_name, s.assign_users,f.item_name,ap.qty');
+    $this->db->from('asset_purchase a');
+    $this->db->join('stock_fixed_asset ap','ap.purchase_id=a.id','left');
+    $this->db->from('fixed_assets f','f.id=a.id','left');
+    // Join supplier info
+    $this->db->join('supplier_information b', 'a.supplier_id = b.supplier_id', 'left');
+    
+    // Join stock info
+    $this->db->join('stock s', 's.id = a.stock_id', 'left');
+
+    // Optional filter by assigned user
+    if (!empty($user_id)) {
+        $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
     }
+
+    $this->db->order_by('a.id', 'desc');
+    $this->db->limit($per_page, $page);
+
+    $query = $this->db->get();
+    
+    if ($query->num_rows() > 0) {
+        return $query->result_array();
+    }
+    
+    return false;
+}
+
 public function asset_purchase_list_count() {
         $query = $this->db->select('a.*,b.supplier_name')
                 ->from('asset_purchase a')

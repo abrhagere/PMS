@@ -32,6 +32,7 @@
     <thead>
         <tr>
             <th>SL</th>
+             <th>Stock_name</th>
             <th>Date</th>
             <th>Total Amount</th>
         </tr>
@@ -45,6 +46,7 @@
                 ?>
                 <tr>
                     <td><?php echo $key + 1; ?></td>
+                     <td><?php echo $row->stock_name; ?></td>
                     <td><?php echo date('Y-m-d', strtotime($row->date)); ?></td>
                     <td><?php echo number_format($row->amount, 2); ?></td>
                 </tr>
@@ -61,7 +63,7 @@
     </tbody>
     <tfoot>
         <tr>
-            <th colspan="2" style="text-align:right">Total:</th>
+            <th colspan="3" style="text-align:right">Total:</th>
             <th><?php echo number_format($total_amount, 2); ?></th>
         </tr>
     </tfoot>
@@ -80,31 +82,28 @@ $(document).ready(function() {
     var table = $('#tableSearch').DataTable();
 
     function updateTotal() {
-        // Get the data of the visible rows in the 3rd column (index 2)
         var total = 0;
-        table.rows({ search: 'applied' }).every(function(rowIdx, tableLoop, rowLoop) {
-            var data = this.data();
-            // data[2] is the 'Total Amount' column
+
+        // Use the 4th column (index 3) for 'Total Amount'
+        table.column(3, { search: 'applied' }).data().each(function(value, index) {
             // Remove commas and parse float
-            var amount = parseFloat(data[2].replace(/,/g, ''));
-            if (!isNaN(amount)) {
-                total += amount;
-            }
+            var amount = parseFloat(value.toString().replace(/,/g, '')) || 0;
+            total += amount;
         });
 
-        // Update the footer total with formatted number
-        $(table.column(2).footer()).html(total.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2}));
+        // Update footer total with formatted number
+        $(table.column(3).footer()).html(total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
     }
 
     // Initial total update
     updateTotal();
 
-    // Update total on each draw event (search, pagination, sort)
+    // Update total whenever table is drawn (pagination, search, sort)
     table.on('draw', function() {
         updateTotal();
     });
 });
-
 </script>
+
 
 

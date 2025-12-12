@@ -142,3 +142,17 @@
         }
     });
 </script>
+<script>
+$(document).ready(function() {
+    $('#dataTableExample2').DataTable({
+        "paging": true,       // Enable pagination
+        "searching": true,    // Enable search box
+        "ordering": true,     // Enable column sorting
+        "order": [[0, "asc"]],// Default sort on first column
+        "lengthMenu": [10, 25, 50, 100], // Entries per page
+        "columnDefs": [
+            { "orderable": false, "targets": 4 } // Disable sorting on 'Action' column
+        ]
+    });
+});
+</script>

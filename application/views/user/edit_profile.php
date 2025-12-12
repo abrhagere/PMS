@@ -88,6 +88,23 @@
                             </div>
                             <div class="card-content-languages-group">
                                 <div>
+                                    <h4>Role:</h4>
+                                </div>
+                                <div>
+                                    <ul>
+                                        <li>
+                                            <div id="roleDisplayContainer" style="padding: 8px 0;">
+                                                <input type="text" class="form-control" value="{roles_display}" readonly style="background-color: #f5f5f5; cursor: not-allowed;" id="roleDisplayInput" />
+                                            </div>
+                                            <small class="text-muted" style="font-size: 12px; margin-top: 5px; display: block;">
+                                                <i class="fa fa-info-circle"></i> Your role(s) are assigned by the administrator
+                                            </small>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="card-content-languages-group">
+                                <div>
                                     <h4><?php echo display('image') ?>:</h4>
                                 </div>
                                 <div>
@@ -111,3 +128,31 @@
     </section> <!-- /.content -->
 </div> <!-- /.content-wrapper -->
 <!-- Edit Profile Page End -->
+
+<script>
+$(document).ready(function() {
+    // Display roles as badges
+    var rolesDisplay = $('#roleDisplayInput').val();
+    var rolesArray = [];
+    
+    // Parse roles from comma-separated string
+    if (rolesDisplay && rolesDisplay !== '{roles_display}' && rolesDisplay !== 'No Role Assigned') {
+        rolesArray = rolesDisplay.split(',').map(function(role) {
+            return role.trim();
+        }).filter(function(role) {
+            return role.length > 0;
+        });
+    }
+    
+    // If we have roles, display them as badges
+    if (rolesArray.length > 0) {
+        var badgesHtml = '';
+        rolesArray.forEach(function(role) {
+            badgesHtml += '<span class="label label-primary" style="margin-right: 5px; margin-bottom: 5px; display: inline-block; padding: 6px 12px; font-size: 13px;">' +
+                         '<i class="fa fa-user-circle"></i> ' + role + 
+                         '</span>';
+        });
+        $('#roleDisplayContainer').html(badgesHtml);
+    }
+});
+</script>

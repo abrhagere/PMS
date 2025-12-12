@@ -15,7 +15,20 @@ class Attendance_model extends CI_Model {
     //attendance List
     public function attendance_list() {
         $date = date('Y-m-d');
-        $query =$this->db->select("count(DISTINCT(e.att_id)) as att_id,e.*,p.id,p.first_name,p.last_name")->join('employee_history p','e.employee_id = p.id','left')->where('e.date',$date)->group_by('e.att_id')->order_by('e.att_id', 'desc')->get('attendance e');
+        $CI =& get_instance();
+
+        $user_id = $CI->session->userdata('user_id');
+        $query = $this->db
+    ->select("count(DISTINCT(e.att_id)) as att_id, e.*, p.id, p.first_name, p.last_name,s.stock_name")
+    ->from('attendance e')
+    ->join('employee_history p', 'e.employee_id = p.id', 'left')
+    ->join('stock s', 's.id = p.stock_id','left')
+    ->where("s.assign_users LIKE '%\"$user_id\"%'",null,false)
+    ->where('e.date', $date)
+    ->group_by('e.att_id')
+    ->order_by('e.att_id', 'desc')
+    ->get();
+
 
 
         if ($query->num_rows() > 0) {
@@ -26,9 +39,13 @@ class Attendance_model extends CI_Model {
     }
 
        public function manage_attendance($per_page = null, $page = null) {
-        $this->db->select('a.*,b.first_name,b.last_name');
+        $CI =& get_instance();
+        $user_id = $CI->session->userdata('user_id');
+        $this->db->select('a.*,b.first_name,b.last_name,s.stock_name');
         $this->db->from('attendance a');
         $this->db->join('employee_history b','a.employee_id=b.id');
+        $this->db->join('stock s', 's.id = b.stock_id','left');
+        $this->db->where("s.assign_users LIKE '%\"$user_id\"%'",null,false);
         $this->db->order_by('a.att_id', 'DESC');
         $this->db->limit($per_page, $page);
         $query = $this->db->get();
@@ -51,21 +68,27 @@ class Attendance_model extends CI_Model {
 
     }
 
-    public function employee_list()
-    {
-        $this->db->select('*');
-        $this->db->from('employee_history');
-        $query=$this->db->get();
-        $data=$query->result();
-        
-       $list = array('' => 'Select One...');
-        if(!empty($data)){
-            foreach ($data as $value){
-                $list[$value->id]=$value->first_name.$value->last_name."(".$value->id.")";
-            }
+   public function employee_list()
+{
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+
+    $this->db->select('*');
+     $this->db->from('stock s');
+    $this->db->join('employee_history p','p.stock_id=s.id','left');
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+    $query = $this->db->get();
+    $data = $query->result();
+    
+    $list = array('' => 'Select One...');
+    if (!empty($data)) {
+        foreach ($data as $value) {
+            $list[$value->id] = $value->first_name . ' ' . $value->last_name . " (" . $value->id . ")";
         }
-        return $list;
     }
+    return $list;
+}
+
     //Retrieve designation Edit Data
     public function designation_editdata($id) {
         $this->db->select('*');
@@ -121,12 +144,15 @@ class Attendance_model extends CI_Model {
         return $this->db->where('att_id', $data["att_id"])
             ->update("attendance", $data);
     }
-
 //datebetween attendance repot
 public function datewiseReport($format_start_date,$format_end_date){
-$this->db->select('e.*,count(DISTINCT(p.id)) as emp_his_id,p.id,p.first_name,p.last_name');
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+$this->db->select('e.*,count(DISTINCT(p.id)) as emp_his_id,p.id,p.first_name,p.last_name,s.stock_name');
 $this->db->from('attendance e');
 $this->db->join('employee_history p','e.employee_id = p.id','left');
+$this->db->join('stock s', 's.id = p.stock_id','left');
+$this->db->where("s.assign_users LIKE '%\"$user_id\"%'",null,false);
 $this->db->where('e.date >=', $format_start_date);
 $this->db->where('e.date <=', $format_end_date);
 $this->db->group_by('e.att_id');
@@ -136,14 +162,15 @@ return $result;
 
     }
 
-  public function emp_information($id){
-    $this->db->select('a.*,b.designation as emdesignation');
+ public function emp_information($id){
+    $this->db->select('a.*, b.designation as emdesignation');
     $this->db->from('employee_history a');
-    $this->db->join('designation b','a.designation=b.id');
-    $this->db->where('a.id',$id);
-    $ab = $this->db->get();
-    return $ab->result_array();
+    $this->db->join('designation b','a.designation=b.id','left');
+    $this->db->where('a.id', $id);
+    $query = $this->db->get();
+    return $query->result_array();
 }
+
 
 function search($id,$start_date,$end_date)
     {

@@ -102,6 +102,25 @@
                         <?php echo form_open('Cinvoice/invoice_update',array('class' => 'form-vertical','id'=>'invoice_update' ))?>
                     <div class="panel-body">
                         <div class="row">
+                             <!-- stock -->
+                             <div class="col-sm-6">
+                               <div class="form-group row">
+                                    <label for="stock" class="col-sm-3 col-form-label"><?php echo display('stock')?>
+                                        <i class="text-danger">*</i>
+                                    </label>
+                                    <div class="col-sm-6">
+                                 <input type="text" name="stock_name" id="stock_id" class="form-control" 
+       value="<?php echo isset($stock_id) ? $stock_id : ''; ?>" 
+       required tabindex="1" placeholder="Enter stock name">
+
+
+                                    </div>
+
+                                </div> 
+                            </div>
+                            <!-- end of stock -->
+                        </div>
+                        <div class="row">
                             <div class="col-sm-6" id="payment_from_1">
                                 <div class="form-group row">
                                     <label for="customer_name" class="col-sm-3 col-form-label"><?php echo
@@ -396,9 +415,7 @@ $available_qtyyy = ($purchased_qty ?? 0) - ($sold_qty ?? 0);
             <input type="hidden" name="invoice_id" id="invoice_id" value="{invoice_id}"/>
         </td>
         <td>
-            <button class="btn btn-info" type="button" onClick="addInputField('addinvoiceItem');" tabindex="12" id="add_invoice_item">
-                <i class="fa fa-plus"></i>
-            </button>
+           
         </td>
     </tr>
 
@@ -598,7 +615,6 @@ $available_qtyyy = ($purchased_qty ?? 0) - ($sold_qty ?? 0);
 </div>
 <!-- Invoice Report End -->
 
-
 <script type="text/javascript">
 
      $(document).ready(function() {
@@ -686,27 +702,14 @@ $(document ).ready(function() {
 });
 function product_stock(sl) {
     var batch_id   = $('#batch_id_' + sl).val();
+     var stock_id   = $('#stock_id').val();
+    console.log("Stock ID:", stock_id);
     var product_id = $('.product_id_' + sl).val();
     var invoice_select = 'invoice_id_' + sl; // invoice select element
     var available_quantity = 'available_quantity_' + sl;
     var expire_date = 'expire_date_' + sl;
 
-    // Duplicate batch check
-    var duplicate = false;
-    $('select[id^="batch_id_"]').each(function (i, el) {
-        var rowSl = $(el).attr("id").split("_")[2];
-        var pId   = $('.product_id_' + rowSl).val();
-        var bId   = $(el).val();
-        if (rowSl != sl && pId == product_id && bId == batch_id) {
-            duplicate = true;
-        }
-    });
-
-    if (duplicate) {
-        alert("Already selected");
-        $('#batch_id_' + sl)[0].selectedIndex = 0;
-        return false;
-    }
+    
 
     var base_url = $('.baseUrl').val();
 
@@ -714,7 +717,11 @@ function product_stock(sl) {
     $.ajax({
         type: "POST",
         url: base_url + "Cinvoice/retrieve_product_batchid",
-        data: { batch_id: batch_id, product_id: product_id },
+       data: {
+        batch_id: batch_id,
+        product_id: product_id,
+        stock_id: stock_id || 0 // send 0 or default if undefined
+    },
         cache: false,
         success: function(data) {
             try {
@@ -747,7 +754,7 @@ function product_stock(sl) {
             $.ajax({
                 type: "POST",
                 url: base_url + "Cinvoice/retrieve_invoice_by_batch",
-                data: { product_id: product_id, batch_id: batch_id },
+                data: { product_id: product_id, batch_id: batch_id,stock_id:stock_id },
              success: function(data) {
     try {
         console.log("Raw invoice data:", data); // raw response
@@ -791,29 +798,53 @@ function invoice_stock(sl) {
     var available_quantity = 'available_quantity_' + sl;
     var expire_date        = 'expire_date_' + sl;
     var base_url           = $('.baseUrl').val();
+    var stock_id           = $("#stock_id").val();
     var priceClass         = 'price_item' + sl;
-    var manufacturer_rate  = 'manufacturer_rate_' + sl; // ✅ add this
+    var manufacturer_rate  = 'manufacturer_rate_' + sl;
 
     if (!invoice_id) return false;
 
+    // Duplicate check for product_id + batch_id + invoice_id
+    var duplicate = false;
+    $('select[id^="invoice_id_"]').each(function () {
+        var rowSl = $(this).attr("id").split("_")[2];
+        var pId   = $('.product_id_' + rowSl).val();
+        var bId   = $('#batch_id_' + rowSl).val();
+        //var stock_id=$("#stock_id").val();
+        var invId = $(this).val();
+
+        if (rowSl != sl && pId == product_id && bId == batch_id && invId == invoice_id && invoice_id !== '') {
+            duplicate = true;
+            return false; // break loop
+        }
+    });
+
+    if (duplicate) {
+        alert("This product, batch, and invoice combination is already selected.");
+        $('#invoice_id_' + sl).val('').trigger('change');
+        $('#' + available_quantity).val('');
+        $('#' + expire_date).html('');
+        return false;
+    }
+
+    // Proceed with AJAX if no duplicate
     $.ajax({
         type: "POST",
         url: base_url + "Cinvoice/retrieve_qty_by_invoice",
         data: {
             product_id: product_id,
             batch_id: batch_id,
-            invoice_id: invoice_id
+            invoice_id: invoice_id,
+            stock_id: stock_id
         },
         success: function(data) {
             try {
                 var obj = JSON.parse(data);
 
-                // ✅ Set the values into the form
                 $('#' + available_quantity).val(obj.available_qty || '');
                 $('.' + priceClass).val(obj.sell_price || '');
-                $('#' + manufacturer_rate).val(obj.rate || ''); // ✅ this line sets the rate
+                $('#' + manufacturer_rate).val(obj.rate || '');
 
-                // Handle expiry date display...
                 var expDate = new Date(obj.expeire_date);
                 var yyyy = expDate.getFullYear();
                 var mm = ('0' + (expDate.getMonth() + 1)).slice(-2);
@@ -847,6 +878,7 @@ function invoice_stock(sl) {
         }
     });
 }
+
 
 
   function checkqty(sl)
@@ -958,6 +990,11 @@ function customer_autocomplete(sl) {
 <script type="text/javascript">
 
 function invoice_productList(sl) {
+    var stock_id = $('#stock_id').val()
+    if (!stock_id || stock_id==0) {
+        alert('<?php echo display('please_select_stock'); ?>!');
+        return false;
+    }
 
    var priceClass = 'price_item'+sl;
    //var ManfacturarClass = 'priceClass'+sl;
@@ -972,6 +1009,8 @@ function invoice_productList(sl) {
         minLength: 0,
         source: function( request, response ) {
             var product_name = $('#product_name_'+sl).val();
+            var stock_id = $('#stock_id').val();
+            
         $.ajax( {
           url: "<?php echo base_url('Cinvoice/autocompleteproductsearch')?>",
           method: 'post',
@@ -979,8 +1018,10 @@ function invoice_productList(sl) {
           data: {
             term: request.term,
             product_name:product_name,
+            stock_id:stock_id,
           },
           success: function( data ) {
+            console.log('Returned products:', data);
             response( data );
 
           }
@@ -995,7 +1036,10 @@ function invoice_productList(sl) {
                 $(this).val(ui.item.label);
            // var sl = $(this).parent().parent().find(".sl").val(); 
                 var id=ui.item.value;
-                var dataString = 'product_id='+ id;
+                //var dataString = 'product_id='+ id;
+                var stock_id=$("#stock_id").val();
+                //alert(stock_id);
+                var dataString = 'product_id=' + id + '&stock_id=' + stock_id;
                 var base_url = $('.baseUrl').val();
 
                 $.ajax
@@ -1047,6 +1091,24 @@ $(document).ready(function(){
  $('#add_invoice').trigger('click');
         }
     });
+});
+</script>
+<script>
+    document.getElementById("insert_sale").addEventListener("submit", function(e) {
+    let btn = document.getElementById("add_invoice");
+
+    // If button already disabled, block multiple submissions
+    if (btn.disabled) {
+        e.preventDefault();
+        return false;
+    }
+
+    // Show spinner and change text
+    btn.querySelector(".spinner-border").classList.remove("d-none");
+    btn.querySelector(".btn-text").textContent = "Processing...";
+
+    // Disable button to prevent double-click
+    btn.disabled = true;
 });
 </script>
 

@@ -59,6 +59,11 @@ class Lfixedasset {
     //Asset Purchase add form
     public function purchase_add_form() {
         $CI = & get_instance();
+        $CI->load->model('Stocks');
+		$user_id = $CI->session->userdata('user_id');
+		//$user_id = $CI->session->userdata('user_id');
+		// ✅ Load only stocks assigned to this user
+		$all_stock = $CI->Stocks->get_stocks_assigned_to_user($user_id);
         $CI->load->model('Web_settings');
         $CI->load->model('Fixedasset');
         $currency_details = $CI->Web_settings->retrieve_setting_editdata();
@@ -67,6 +72,7 @@ class Lfixedasset {
         $data = array(
             'title'           => display('add_purchase'),
             'store_list'      => $store_list,
+            'all_stock'      => $all_stock,
             'bank_list'       => $bank_list,
         );
         $purchaseForm = $CI->parser->parse('fixedassets/purchase_form', $data, true);

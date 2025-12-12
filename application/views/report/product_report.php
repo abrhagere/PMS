@@ -9,6 +9,19 @@ function printDiv(divName) {
     document.body.innerHTML = originalContents;
 }
 </script>
+<style type="text/css">
+@media (max-width: 768px) {
+    .table-responsive-scroll {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+    }
+    .table-responsive-scroll table {
+        min-width: 1200px; /* Adjust width based on your columns */
+        white-space: nowrap;
+    }
+}
+</style>
 
 <!-- Product Report Start -->
 <div class="content-wrapper">
@@ -104,6 +117,7 @@ function printDiv(divName) {
 										<tr>
 											<th><?php echo display('sales_date') ?></th>
 											<th><?php echo display('product_name') ?></th>
+                                            <th><?php echo display('stock_name') ?></th>
 											<th><?php echo display('product_model') ?></th>
 											<th><?php echo display('customer_name') ?></th>
 											<th><?php echo display('quantity') ?></th>
@@ -129,6 +143,7 @@ function printDiv(divName) {
 										<tr>
 											<td><?php echo $rep['sales_date'] ?></td>
 											<td><?php echo $rep['product_name'] ?></td>
+                                            <td><?php echo $rep['stock_name'] ?></td>
 											<td><?php echo $rep['product_model'] ?></td>
 											<td><?php echo $rep['customer_name'] ?></td>
 											<td><?php echo $rep['quantity'] ?></td>
@@ -164,14 +179,15 @@ function printDiv(divName) {
 									</tbody>
 					<tfoot>
     <tr>
-        <td colspan="4" style="text-align:right;"><b><?php echo display('totals') ?></b></td>
-        <td style="text-align:right;"></td> <!-- Quantity -->
-        <td style="text-align:right;"></td> <!-- Rate -->
-        <td style="text-align:right;"></td> <!-- Grand Total -->
-        <td style="text-align:right;"></td> <!-- Manufacturer Total -->
-        <td style="text-align:right;"></td> <!-- Profit -->
+        <th colspan="5" style="text-align:right;"><?php echo display('totals') ?></th>
+        <th style="text-align:right;"></th> <!-- Quantity -->
+        <th style="text-align:right;"></th> <!-- Rate -->
+        <th style="text-align:right;"></th> <!-- Grand Total -->
+        <th style="text-align:right;"></th> <!-- Manufacturer Total -->
+        <th style="text-align:right;"></th> <!-- Profit -->
     </tr>
 </tfoot>
+
 
 
 
@@ -206,61 +222,58 @@ function printDiv(divName) {
  <!-- Product Report End -->
 
 <script>
-    $(document).ready(function () {
-        // Initialize DataTable
-        var table = $('#productSalesReportTable').DataTable({
-            // Optional settings
-            "footerCallback": function (row, data, start, end, display) {
-                var api = this.api();
+$(document).ready(function () {
+    // Initialize DataTable
+    var table = $('#productSalesReportTable').DataTable({
+        responsive: false, // Disable DataTables responsive; use CSS scroll
+        scrollX: false,    // Handled by CSS
+        autoWidth: false,
+        "aaSorting": [[0, "asc"]], // Sort by sales_date by default
+        "columnDefs": [
+            { "orderable": false, "targets": [0,1,2,3,4,5,6,7,8,9] }
+        ],
+        lengthMenu: [[10, 25, 50, 100, 250, 500], [10, 25, 50, 100, 250, 500]],
+        dom: "<'row'<'col-sm-4'l><'col-sm-4 text-center'B><'col-sm-4'f>>tip",
+        buttons: [
+            { extend: "copy", className: "btn-sm prints", exportOptions: { columns: ':visible' } },
+            { extend: "csv", className: "btn-sm prints", title: "Product Sales Report", exportOptions: { columns: ':visible' } },
+            { extend: "excel", className: "btn-sm prints", title: "Product Sales Report", exportOptions: { columns: ':visible' } },
+            { extend: "pdf", className: "btn-sm prints", title: "Product Sales Report", exportOptions: { columns: ':visible' } },
+            { extend: "print", className: "btn-sm prints", title: "Product Sales Report", exportOptions: { columns: ':visible' } }
+        ],
+        footerCallback: function (row, data, start, end, display) {
+    var api = this.api();
 
-                // Helper function to remove currency and parse float
-                var parseValue = function (i) {
-                    return typeof i === 'string' ?
-                        parseFloat(i.replace(/[^0-9.-]+/g, '')) : typeof i === 'number' ?
-                        i : 0;
-                };
+    // Helper to parse numbers from table cells
+    var parseValue = function (i) {
+        return typeof i === 'string' ?
+            parseFloat(i.replace(/[^0-9.-]+/g, '')) || 0 :
+            typeof i === 'number' ? i : 0;
+    };
 
-                // Columns index
-                var quantityIdx = 4;
-                var rateIdx = 5;
-                var grandTotalIdx = 6;
-                var manufacturerIdx = 7;
-                var profitIdx = 8;
+    // Column indices
+    var quantityIdx = 5;
+    var rateIdx = 6;
+    var grandTotalIdx = 7;
+    var manufacturerIdx = 8;
+    var profitIdx = 9;
 
-                // Calculate totals
-                var totalQuantity = api.column(quantityIdx, { search: 'applied' }).data()
-                    .reduce(function (a, b) {
-                        return parseValue(a) + parseValue(b);
-                    }, 0);
+    // Calculate totals for current page
+    var totalQuantity = api.column(quantityIdx, { page: 'current' }).data().reduce((a,b) => parseValue(a)+parseValue(b), 0);
+    var totalRate = api.column(rateIdx, { page: 'current' }).data().reduce((a,b) => parseValue(a)+parseValue(b), 0);
+    var totalGrand = api.column(grandTotalIdx, { page: 'current' }).data().reduce((a,b) => parseValue(a)+parseValue(b), 0);
+    var totalManufacturer = api.column(manufacturerIdx, { page: 'current' }).data().reduce((a,b) => parseValue(a)+parseValue(b), 0);
+    var totalProfit = api.column(profitIdx, { page: 'current' }).data().reduce((a,b) => parseValue(a)+parseValue(b), 0);
 
-                var totalRate = api.column(rateIdx, { search: 'applied' }).data()
-                    .reduce(function (a, b) {
-                        return parseValue(a) + parseValue(b);
-                    }, 0);
+    // Display totals in footer
+    $(api.column(quantityIdx).footer()).html(totalQuantity);
+    $(api.column(rateIdx).footer()).html(totalRate.toFixed(2));
+    $(api.column(grandTotalIdx).footer()).html(totalGrand.toFixed(2));
+    $(api.column(manufacturerIdx).footer()).html(totalManufacturer.toFixed(2));
+    $(api.column(profitIdx).footer()).html(totalProfit.toFixed(2));
+}
 
-                var totalGrand = api.column(grandTotalIdx, { search: 'applied' }).data()
-                    .reduce(function (a, b) {
-                        return parseValue(a) + parseValue(b);
-                    }, 0);
-
-                var totalManufacturer = api.column(manufacturerIdx, { search: 'applied' }).data()
-                    .reduce(function (a, b) {
-                        return parseValue(a) + parseValue(b);
-                    }, 0);
-
-                var totalProfit = api.column(profitIdx, { search: 'applied' }).data()
-                    .reduce(function (a, b) {
-                        return parseValue(a) + parseValue(b);
-                    }, 0);
-
-                // Update footer
-                $(api.column(quantityIdx).footer()).html(totalQuantity);
-                $(api.column(rateIdx).footer()).html(totalRate.toFixed(2));
-                $(api.column(grandTotalIdx).footer()).html(totalGrand.toFixed(2));
-                $(api.column(manufacturerIdx).footer()).html(totalManufacturer.toFixed(2));
-                $(api.column(profitIdx).footer()).html(totalProfit.toFixed(2));
-            }
-        });
     });
+});
 </script>
 

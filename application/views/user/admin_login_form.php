@@ -1,5 +1,110 @@
 <script src='https://www.google.com/recaptcha/api.js'></script>
 <!-- Admin login area start-->
+<style>
+    .container-center {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .panel.panel-bd {
+        width: 100%;
+        max-width: 480px;
+        border-radius: 12px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        border: none;
+        overflow: hidden;
+        background: #ffffff;
+    }
+    .panel-heading {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #ffffff;
+        padding: 30px 25px;
+        border-bottom: none;
+    }
+    .view-header {
+        text-align: center;
+    }
+    .header-icon {
+        margin-bottom: 15px;
+    }
+    .header-icon i {
+        font-size: 48px;
+        color: #ffffff;
+    }
+    .header-title h3 {
+        font-size: 32px;
+        font-weight: 600;
+        margin: 0 0 10px 0;
+        color: #ffffff;
+    }
+    .header-title small {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.9);
+        display: block;
+    }
+    .panel-body {
+        padding: 35px 30px;
+    }
+    .form-group {
+        margin-bottom: 25px;
+    }
+    .form-group label.control-label {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 10px;
+        display: block;
+    }
+    .form-group input.form-control {
+        font-size: 18px;
+        padding: 14px 18px;
+        height: auto;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    .form-group input.form-control:focus {
+        border-color: #667eea;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+    .form-group .help-block {
+        font-size: 14px;
+        color: #666;
+        margin-top: 8px;
+    }
+    .btn-success {
+        font-size: 18px;
+        font-weight: 600;
+        padding: 14px 30px;
+        width: 100%;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .btn-success:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    .alert {
+        font-size: 16px;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    .g-recaptcha {
+        margin-bottom: 20px;
+    }
+</style>
 <div class="container-center">
     <!-- Alert Message -->
     <?php

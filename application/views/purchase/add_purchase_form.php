@@ -83,8 +83,6 @@
                                     </label>
                                     <div class="col-sm-9">
                                         <select name="manufacturer_id" id="manufacturer_id" class="form-control " required="required" tabindex="1" onchange="product_pur_or_list()"> 
-                                          
-
                                             <option value=""> <?php echo display('select_manufacturer')?></option>
                                             <?php 
                                             $manufacturer_id = $this->session->userdata('manufacturer_id');
@@ -99,11 +97,9 @@
                                         </select>
                                     </div>
 
-                                   
                                 </div> 
                             </div>
-
-                             <div class="col-sm-6">
+                                <div class="col-sm-6">
                                 <div class="form-group row">
                                     <label for="date" class="col-sm-4 col-form-label"><?php echo display('purchase_date') ?>
                                         <i class="text-danger">*</i>
@@ -137,6 +133,38 @@
                                     </div>
                                 </div> 
                             </div>
+                        </div>
+                        <div class="row">
+                             <!-- stock -->
+                             <div class="col-sm-6">
+                               <div class="form-group row">
+                                    <label for="stock" class="col-sm-3 col-form-label"><?php echo display('stock')?>
+                                        <i class="text-danger">*</i>
+                                    </label>
+                                    <div class="col-sm-9">
+                                    <select name="stock_name" id="stock_id" class="form-control" required tabindex="1"> 
+                                     <option value=""><?php echo display('select_stock'); ?></option>
+                                           <?php 
+                                           if (!empty($all_stock) && is_array($all_stock)) { 
+                                               foreach ($all_stock as $specific_stock) {
+                                           ?>
+                                               <option value="<?php echo $specific_stock['id']; ?>">
+                                                   <?php echo $specific_stock['stock_name']; ?>
+                                               </option>
+                                           <?php
+                                               }
+                                           } else {
+                                             echo '<option value="">No stocks assigned</option>';
+                                           }
+                                           ?>
+                                </select>
+
+
+                                    </div>
+
+                                </div> 
+                            </div>
+                            <!-- end of stock -->
                         </div>
                         <div class="row">
                               <div class="col-sm-6" id="payment_from_1">
@@ -182,7 +210,7 @@
                                     <tr>
                                             <th class="text-center" width="20%"><?php echo display('item_information') ?><i class="text-danger">*</i></th> 
                                             <th class="text-center"><?php echo display('batch_id') ?> <i class="text-danger">*</i></th>
-                                             <th class="text-center"><?php echo display('expeire_date') ?> <i class="text-danger">*</i></th>
+                                             <th class="text-center"><?php echo display('expeire_date') ?></th>
                                             <th class="text-center"><?php echo display('stock_ctn') ?></th>
                                             <th class="text-center"><?php echo display('quantity') ?> <i class="text-danger">*</i></th>
                                             <th class="text-center"><?php echo display('manufacturer_rate') ?><i class="text-danger">*</i></th>
@@ -204,7 +232,7 @@
                                                 <input type="text" name="batch_id[]" id="batch_id_1" class="form-control text-right"  tabindex="6" placeholder="<?php echo display('batch_id') ?>" required=""/>
                                             </td>
                                             <td>
-                                                <input type="text" name="expeire_date[]" id="expeire_date_1" class="form-control datepicker " tabindex="7"    placeholder="<?php echo display('expeire_date') ?>" onchange="checkExpiredate(1)" required=""/>
+                                                <input type="text" name="expeire_date[]" id="expeire_date_1" class="form-control datepicker " tabindex="7"    placeholder="<?php echo display('expeire_date') ?>" onchange="checkExpiredate(1)"/>
                                             </td>
 
                                        <td class="wt">
@@ -360,10 +388,11 @@
 
 function product_pur_or_list(sl) {
     var manufacturer_id = $('#manufacturer_id').val();
+    var stock_id = $('#stock_id').val();
 
     // ✅ Require manufacturer before searching
-    if (!manufacturer_id || manufacturer_id == 0) {
-        alert('<?php echo display('please_select_manufacturer'); ?>!');
+    if (!manufacturer_id || manufacturer_id == 0 || !stock_id || stock_id==0) {
+        alert('<?php echo display('make_sure_you_are_selected_stock_and_manufacturer'); ?>!');
         return false;
     }
 
@@ -398,6 +427,8 @@ function product_pur_or_list(sl) {
 
             var product_id       = ui.item.value;
             var manufacturer_id  = $('#manufacturer_id').val();
+            var stock_id  = $('#stock_id').val();
+            //alert(stock_id);
             var base_url         = $('.baseUrl').val();
 
             var available_quantity = 'available_quantity_' + sl;
@@ -407,7 +438,7 @@ function product_pur_or_list(sl) {
             $.ajax({
                 type: "POST",
                 url: base_url + "Cinvoice/retrieve_product_data",
-                data: { product_id: product_id, manufacturer_id: manufacturer_id },
+                data: { product_id: product_id, manufacturer_id: manufacturer_id,stock_id:stock_id },
                 cache: false,
                 success: function(data) {
                     var obj = JSON.parse(data);
@@ -463,7 +494,7 @@ function addPurchaseOrderField1(divName) {
             '<input type="hidden" class="sl" value="' + count + '">' +
         '</td>' +
         '<td><input type="text" name="batch_id[]" id="batch_id_' + count + '" tabindex="' + tab2 + '" class="form-control text-right" required placeholder="<?php echo display("batch_id") ?>"/></td>' +
-        '<td><input type="text" name="expeire_date[]" onchange="checkExpiredate(' + count + ')" id="expeire_date_' + count + '" required class="form-control datepicker" tabindex="' + tab3 + '" placeholder="<?php echo display("expeire_date") ?>"/></td>' +
+        '<td><input type="text" name="expeire_date[]" onchange="checkExpiredate(' + count + ')" id="expeire_date_' + count + '"  class="form-control datepicker" tabindex="' + tab3 + '" placeholder="<?php echo display("expeire_date") ?>"/></td>' +
         '<td class="wt"><input type="text" id="available_quantity_' + count + '" class="form-control text-right stock_ctn_' + count + '" placeholder="0.00" readonly/></td>' +
         '<td class="text-right"><input type="text" name="product_quantity[]" tabindex="' + tab4 + '" required id="quantity_' + count + '" class="form-control text-right store_cal_' + count + '" onkeyup="calculate_store(' + count + '),checkqty(' + count + ');" onchange="calculate_store(' + count + ');" placeholder="0.00" value="" min="0"/></td>' +
         '<td class="test"><input type="text" name="product_rate[]" required onkeyup="calculate_store(' + count + '),checkqty(' + count + ');" onchange="calculate_store(' + count + ');" id="product_rate_' + count + '" class="form-control product_rate_' + count + ' text-right" placeholder="0.00" value="" min="0" tabindex="' + tab5 + '"/></td>' +

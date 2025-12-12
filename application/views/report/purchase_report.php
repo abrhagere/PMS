@@ -103,6 +103,7 @@ function printDiv(divName) {
         <tr>
             <th><?php echo display('sales_date') ?></th>
             <th><?php echo display('invoice_no') ?></th>
+            <th><?php echo display('stock_name') ?></th>
             <th><?php echo display('manufacturer_name') ?></th>
             <th style="text-align: right;"><?php echo display('total_ammount') ?></th>
         </tr>
@@ -116,6 +117,10 @@ function printDiv(divName) {
                     <a href="<?php echo base_url().'cpurchase/purchase_details_data/{purchase_id}'; ?>">
                         {chalan_no}
                     </a>
+                </td>
+                <td>
+                      {stock_name}
+
                 </td>
                 <td>{manufacturer_name}</td>
                 <td style="text-align: right;">

@@ -106,12 +106,16 @@
                                 </tbody>
                                 <tfoot>
     <tr>
-      <th colspan="1" style="text-align:right">Total:</th>
+      <th colspan="" style="text-align:right">Total:</th>
       <th>
         <?php 
-          $total = $total_expense + $total_payment; 
-          echo number_format($total, 2);
-        ?>
+    $expense = isset($total_expense) ? str_replace(',', '', $total_expense) : 0;
+    $payment = isset($total_payment) ? str_replace(',', '', $total_payment) : 0;
+
+    $total = (float)$expense + (float)$payment;
+    echo number_format($total, 2, '.', ','); // outputs 8,500.00
+?>
+
       </th>
     </tr>
   </tfoot>
@@ -126,5 +130,38 @@
         </div>
     </section>
 </div>
+<script>
+$(document).ready(function() {
+    $('#ExpList').DataTable({
+        "paging": false,
+        "ordering": false,
+        "info": false,
+        "footerCallback": function ( row, data, start, end, display ) {
+            var api = this.api();
+
+            // Helper to remove commas and convert to float
+            var parseValue = function (i) {
+                return typeof i === 'string' ?
+                    parseFloat(i.replace(/,/g, '')) || 0 :
+                    typeof i === 'number' ? i : 0;
+            };
+
+            // Calculate total for **visible rows only**
+            var total = api
+                .column(1, { search: 'applied' }) // second column, filtered rows
+                .nodes()
+                .reduce(function (sum, td) {
+                    return sum + parseValue($(td).text());
+                }, 0);
+
+            // Update footer
+            $(api.column(1).footer()).html(
+                total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+            );
+        }
+    });
+});
+</script>
+
 <!-- Manage Invoice End -->
 

@@ -19,6 +19,30 @@ class Admin_dashboard extends CI_Controller {
     }
     $this->auth->check_admin_auth();
 
+        // Redirect clinic roles to clinic dashboard (only if not already there)
+        // Check current URI to avoid redirect loops
+        $current_uri = $this->uri->uri_string();
+        if (empty($current_uri) || $current_uri == 'Admin_dashboard' || $current_uri == 'Admin_dashboard/index') {
+            $user_id = $this->session->userdata('user_id');
+            if ($user_id) {
+                // Convert user_id to string to match database format (sec_userrole.user_id is varchar)
+                $user_id_str = (string)$user_id;
+                
+                $this->db->select('sr.type');
+                $this->db->from('sec_userrole sur');
+                $this->db->join('sec_role sr', 'sr.id = sur.roleid');
+                $this->db->where('sur.user_id', $user_id_str);
+                $this->db->where_in('sr.type', array('Reception', 'Doctor', 'Nurse', 'Lab Technician'));
+                $query = $this->db->get();
+                
+                if ($query->num_rows() > 0) {
+                    // User is a clinic role, redirect to clinic dashboard
+                    redirect('clinic/dashboard');
+                    return;
+                }
+            }
+        }
+
     // Load models
     $CI->load->model('Customers');
     $CI->load->model('Products');
@@ -297,7 +321,7 @@ class Admin_dashboard extends CI_Controller {
 	}
 	#==============Product sales report date wise===========#
 	public function product_sales_reports_date_wise()
-	{
+	 {
 		$CI =& get_instance();
 		$this->auth->check_admin_auth();
 		$CI->load->library('lreport');	
@@ -411,7 +435,7 @@ class Admin_dashboard extends CI_Controller {
     $CI->load->library('lreport');
     $content = $CI->lreport->expense_report(); // let lreport handle view and data
     $this->template->full_admin_html_view($content);
-    $content = $CI->lreport->expense_report(); // <-- this line here does nothing after full_admin_html_view()
+    //$content = $CI->lreport->expense_report(); // <-- this line here does nothing after full_admin_html_view()
 }
 
 

@@ -53,6 +53,7 @@
                     <thead>
                             <tr>
                                 <th><?php echo display('sl') ?></th>
+                                <th><?php echo display('stock_name') ?></th>
                                 <th><?php echo display('salary_month') ?></th>
                                 <th><?php echo display('generate_by') ?></th>
                                 <th><?php echo display('action') ?></th>
@@ -64,9 +65,9 @@
                             <?php foreach ($salgen as $que) { ?>
                                 <tr class="<?php echo ($sl & 1)?"odd gradeX":"even gradeC" ?>">
                                     <td><?php echo $sl; ?></td>
+                                    <td><?php echo $que->stock_name; ?></td>
                                     <td><?php echo $que->gdate; ?></td>
                                     <td><?php echo $que->generate_by; ?></td>
-                                                                
                                     <td class="center">
         <?php if($this->permission1->method('manage_salary_generate','delete')->access()){ ?>
                                         <a href="<?php echo base_url("Cpayroll/delete_salgenerate/$que->ssg_id") ?>" class="btn btn-xs btn-danger" onclick="return confirm('<?php echo display('are_you_sure') ?>') "><i class="fa fa-trash"></i></a> 
@@ -89,5 +90,19 @@
     </section>
 </div>
 
+<script>
+$(document).ready(function() {
+    $('.datatable').DataTable({
+        "paging": true,        // Enable pagination
+        "searching": true,     // Enable search box
+        "ordering": true,      // Enable sorting
+        "order": [[1, "desc"]], // Default order by 2nd column (salary_month) descending
+        "lengthMenu": [10, 25, 50, 100], // Pagination options
+        "columnDefs": [
+            { "orderable": false, "targets": 3 } // Disable sorting on Action column
+        ]
+    });
+});
+</script>
 
 

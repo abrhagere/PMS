@@ -82,7 +82,7 @@ class Cpurchase extends CI_Controller {
 		$CI->load->model('Purchases');
      	$purchase_id = $CI->Purchases->update_purchase();
 		$this->session->set_userdata(array('message'=>display('successfully_updated')));
-		redirect("Cpurchase/invoice_html/".$purchase_id);
+		redirect("Cpurchase/manage_purchase");
 	}
 
 	
@@ -325,4 +325,5 @@ public function invoice_html($purchase_id){
     $content = $this->parser->parse('purchase/purchase_html', $data, true);
     $this->template->full_admin_html_view($content); 
   }
+ 
 }

@@ -62,8 +62,12 @@ class Payroll_model extends CI_Model {
     }
 
         public function empdropdown(){
+        $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
         $this->db->select('*');
-        $this->db->from('employee_history');
+        $this->db->from('stock s');
+        $this->db->join('employee_history b','s.id = b.stock_id');
+       $this->db->where("s.assign_users LIKE '%\"$user_id\"%'",null,false);
         $query = $this->db->get();
         $data = $query->result();
        
@@ -80,16 +84,23 @@ class Payroll_model extends CI_Model {
         return $this->db->insert('employee_salary_setup', $data);//
     }
 
-         public function salary_setupindex()
-    {
-             return $this->db->select('count(DISTINCT(sstp.e_s_s_id)) as e_s_s_id,sstp.*,p.id,p.first_name,p.last_name')   
-            ->from('employee_salary_setup sstp')
-            ->join('employee_history p', 'sstp.employee_id = p.id', 'left')
-            ->group_by('sstp.employee_id')
-            ->order_by('sstp.salary_type_id', 'desc')
-            ->get()
-            ->result();
-    }
+        public function salary_setupindex()
+{
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+
+    return $this->db
+        ->select('count(DISTINCT(sstp.e_s_s_id)) as e_s_s_id, sstp.*, p.id, p.first_name, p.last_name,s.stock_name')
+        ->from('employee_salary_setup sstp')
+        ->join('employee_history p', 'sstp.employee_id = p.id', 'left')
+        ->join('stock s', 's.id = p.stock_id', 'left')
+        ->where("s.assign_users LIKE '%\"$user_id\"%'", null, false)
+        ->group_by('sstp.employee_id')
+        ->order_by('sstp.salary_type_id', 'desc')
+        ->get()
+        ->result();
+}
+
     public function salary_s_updateForm($id){
         $this->db->where('employee_id',$id);
         $query = $this->db->get('employee_salary_setup');
@@ -149,8 +160,12 @@ class Payroll_model extends CI_Model {
 
         public function salary_generateView($limit = null, $start = null)
     {
-             return $this->db->select('*')   
-            ->from('salary_sheet_generate')
+        $CI =& get_instance();
+     $user_id = $CI->session->userdata('user_id');
+             return $this->db->select('*,s.stock_name')   
+            ->from('salary_sheet_generate p')
+            ->join('stock s', 's.id = p.stock_id','left')
+            ->where("s.assign_users LIKE '%\"$user_id\"%'",null,false)
             ->group_by('ssg_id')
             ->order_by('ssg_id', 'desc')
             ->limit($limit, $start)
@@ -174,9 +189,13 @@ class Payroll_model extends CI_Model {
 
     public function emp_paymentView($limit = null, $start = null)
 {
-    $query = $this->db->select('pment.*, p.id as employee_id, p.first_name, p.last_name')
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+    $query = $this->db->select('pment.*, p.id as employee_id, p.first_name, p.last_name,s.stock_name')
         ->from('employee_salary_payment pment')
         ->join('employee_history p', 'pment.employee_id = p.id', 'left')
+        ->join('stock s', 's.id = p.stock_id', 'left')
+        ->where("s.assign_users LIKE '%\"$user_id\"%'",null,false)
         ->group_by('pment.emp_sal_pay_id')
         ->order_by('pment.emp_sal_pay_id', 'desc');
 
@@ -186,6 +205,27 @@ class Payroll_model extends CI_Model {
 
     return $query->get()->result(); // returns objects; use result_array() if you want arrays
 }
+public function get_salary_payments($from_date = null, $to_date = null)
+{
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+
+    $this->db->select('pment.*, p.id as employee_id, p.first_name, p.last_name, s.stock_name');
+    $this->db->from('employee_salary_payment pment');
+    $this->db->join('employee_history p', 'pment.employee_id = p.id', 'left');
+    $this->db->join('stock s', 's.id = p.stock_id', 'left');
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+
+    if($from_date && $to_date){
+        $this->db->where('pment.payment_date >=', $from_date);
+        $this->db->where('pment.payment_date <=', $to_date);
+    }
+
+    $this->db->order_by('pment.emp_sal_pay_id', 'desc');
+
+    return $this->db->get()->result();
+}
+
 
 
         public function update_payment($data = array())

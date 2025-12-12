@@ -53,6 +53,7 @@
           <thead>
             <tr>
               <th><?php echo display('sl') ?></th>
+              <th><?php echo display('stock_name') ?></th>
               <th><?php echo display('employee_name') ?></th>
               <th><?php echo display('salary_type') ?></th>
               <th><?php echo display('date') ?></th>
@@ -66,6 +67,7 @@
               <?php foreach ($emp_sl_setup as $que) { ?>
                 <tr class="<?php echo ($sl & 1)?"odd gradeX":"even gradeC" ?>">
                   <td><?php echo $sl; ?></td>
+                  <td><?php echo $que->stock_name; ?></td>
                   <td><?php echo $que->first_name.' '.$que->last_name; ?></td>
                   <td><?php if($que->sal_type==1){
                     echo 'Hourly';

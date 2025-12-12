@@ -263,41 +263,74 @@ class Lmanufacturer {
 	}
 
 	################################################################################################ manufacturer sales details all from menu###########
-	public function manufacturer_sales_details_allm($links,$per_page,$page)
-	{
-		$CI =& get_instance();
-		$CI->load->model('manufacturers');
-		$CI->load->model('Web_settings');
-		$CI->load->library('occational');
-		$manufacturer_detail = $CI->manufacturers->manufacturer_personal_data_all();
-		$sales_info 	= $CI->manufacturers->manufacturer_sales_details_all($per_page,$page);
+	public function manufacturer_sales_details_allm($links, $per_page, $page)
+{
+    $CI =& get_instance();
+    $CI->load->model('manufacturers');
+    $CI->load->model('Web_settings');
+    $CI->load->library('occational');
 
-		$sub_total=0;
-		if(!empty($sales_info)){
-			foreach($sales_info as $k=>$v){
-				$sales_info[$k]['date'] = $CI->occational->dateConvert($sales_info[$k]['date']);
-				$sub_total+=$sales_info[$k]['total'];
-			}
-		}
-		$currency_details = $CI->Web_settings->retrieve_setting_editdata();
-		$data=array(
-	'title' 		            => display('manufacturer_sales_details'),
-	'manufacturer_id' 		    => $manufacturer_detail[0]['manufacturer_id'],
-	'manufacturer_name' 	    => '',
-	'details' 			        => $manufacturer_detail[0]['details'],
-	'sub_total'			        => number_format($sub_total, 2, '.', ','),
-	'sales_info' 		        => $sales_info,
-	'links' 			        => $links,
-	'manufacturer_ledger'	    => 'Cmanufacturer/manufacturer_ledger/',
-	'manufacturer_sales_details'=> 'Cmanufacturer/manufacturer_sales_details',
-	'manufacturer_sales_summary'=> 'Cmanufacturer/manufacturer_sales_summary/',
-	'sales_payment_actual'      => 'Cmanufacturer/sales_payment_actual/',
-	'currency'                  => $currency_details[0]['currency'],
-	'position'                  => $currency_details[0]['currency_position'],
-			);
-		$sales_report = $CI->parser->parse('manufacturer/manufacturer_sales_details',$data,true);
-		return $sales_report;
-	}
+    // Get manufacturer details
+    $manufacturer_detail = $CI->manufacturers->manufacturer_personal_data_all();
+
+    // Get sales info including stock_name
+    $sales_info = $CI->manufacturers->manufacturer_sales_details_all($per_page, $page);
+
+    // Initialize totals
+    $sub_total = 0;
+    $total_quantity = 0;
+    $total_paid_amount = 0;
+    $total_due = 0;
+    $total_grand_profit = 0;
+    $total_paid_profit = 0;
+
+    if (!empty($sales_info)) {
+        foreach ($sales_info as $k => $v) {
+            // Format date
+            $sales_info[$k]['date'] = $CI->occational->dateConvert($v['date']);
+
+            // Accumulate totals
+            $sub_total += $v['total'];
+            $total_quantity += $v['quantity'];
+            $total_paid_amount += $v['paid_amount'];
+            $total_due += $v['due_amount'];
+            $total_grand_profit += $v['grand_profit'];
+            $total_paid_profit += $v['paid_profit'];
+
+            // Make sure stock_name is available
+            $sales_info[$k]['stock_name'] = $v['stock_name'] ?? '';
+        }
+    }
+
+    // Get currency details
+    $currency_details = $CI->Web_settings->retrieve_setting_editdata();
+
+    $data = array(
+        'title'                     => display('manufacturer_sales_details'),
+        'manufacturer_id'           => $manufacturer_detail[0]['manufacturer_id'],
+        'manufacturer_name'         => $manufacturer_detail[0]['manufacturer_name'] ?? '',
+        'details'                   => $manufacturer_detail[0]['details'],
+        'sub_total'                 => number_format($sub_total, 2, '.', ','),
+        'total_quantity'            => number_format($total_quantity, 2, '.', ','),
+        'total_paid_amount'         => number_format($total_paid_amount, 2, '.', ','),
+        'total_due'                 => number_format($total_due, 2, '.', ','),
+        'total_grand_profit'        => number_format($total_grand_profit, 2, '.', ','),
+        'total_paid_profit'         => number_format($total_paid_profit, 2, '.', ','),
+        'sales_info'                => $sales_info,
+        'links'                     => $links,
+        'manufacturer_ledger'       => 'Cmanufacturer/manufacturer_ledger/',
+        'manufacturer_sales_details'=> 'Cmanufacturer/manufacturer_sales_details',
+        'manufacturer_sales_summary'=> 'Cmanufacturer/manufacturer_sales_summary/',
+        'sales_payment_actual'      => 'Cmanufacturer/sales_payment_actual/',
+        'currency'                  => $currency_details[0]['currency'],
+        'position'                  => $currency_details[0]['currency_position'],
+    );
+
+    // Parse view
+    $sales_report = $CI->parser->parse('manufacturer/manufacturer_sales_details', $data, true);
+    return $sales_report;
+}
+
 
 	public function manufacturer_sales_summary($manufacturer_id,$links,$per_page,$page)
 	{
@@ -433,6 +466,7 @@ class Lmanufacturer {
 		$data=array(
 		'title' 			=> 	display('manufacturer_ledger'),
 		'ledger' 			=> 	$ledger,
+		'stock_name'        =>$stock_name,
 		'manufacturer_name' => 	'',
 		'manufacturer_ledger'=> 'Cmanufacturer/manufacturer_ledger',
 		'manufacturer'		=>	$manufacturer,
@@ -489,6 +523,7 @@ class Lmanufacturer {
 		$data=array(
 	'title' 			   => 	display('manufacturer_ledger'),
 	'ledger' 			    => 	$ledger,
+	'stock_name' 			    => 	$stock_name,
 	'manufacturer_name' 	=> 	$manufacturer_details[0]['manufacturer_name'],
 	'address' 			    => 	$manufacturer_details[0]['address'],
 	'total_amount'		    =>	number_format($summary[1][0]['total_debit']-$summary[0][0]['total_credit'], 2, '.', ','),

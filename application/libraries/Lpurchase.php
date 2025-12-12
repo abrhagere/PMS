@@ -3,23 +3,45 @@ class Lpurchase {
 
 	//Purchase add form
 	public function purchase_add_form()
-	{
-		$CI =& get_instance();
-		$CI->load->model('Purchases');
-		$CI->load->model('Web_settings');
-		$all_manufacturer = $CI->Purchases->select_all_manufacturer();
-		$currency_details = $CI->Web_settings->retrieve_setting_editdata();
-        $bank_list        = $CI->Web_settings->bank_list();
-		$data = array(
-				'title' 		=> display('add_purchase'),
-				'all_manufacturer' 	=> $all_manufacturer,
-				'invoice_no' 	=> $CI->auth->generator(10),
-				'discount_type' => $currency_details[0]['discount_type'],
-				'bank_list'     => $bank_list,
-			);
-		$purchaseForm = $CI->parser->parse('purchase/add_purchase_form',$data,true);
-		return $purchaseForm;
-	}
+{
+    $CI =& get_instance(); // Always get CI instance inside libraries
+    $CI->load->model('Purchases');
+    $CI->load->model('Web_settings');
+    $CI->load->model('Stocks'); 
+    $CI->load->library('parser');
+
+    // ✅ Get logged-in user ID safely
+    $user_id = $CI->session->userdata('user_id');
+	
+
+
+    // Load necessary data	
+    $all_manufacturer = $CI->Purchases->select_all_manufacturer();
+    $currency_details = $CI->Web_settings->retrieve_setting_editdata();
+    $bank_list        = $CI->Web_settings->bank_list();
+
+    $discount_type = !empty($currency_details[0]['discount_type']) ? $currency_details[0]['discount_type'] : 0;
+
+    // ✅ Load only stocks assigned to this user
+   $all_stock = $CI->Stocks->get_stocks_assigned_to_user($user_id);
+   
+
+    $data = array(
+        'title'            => display('add_purchase'),
+        'all_manufacturer' => $all_manufacturer,
+        'invoice_no'       => $CI->auth->generator(10),
+        'discount_type'    => $discount_type,
+        'bank_list'        => $bank_list,
+        'all_stock'        => $all_stock,
+    );
+
+    // Parse the view file
+    $purchaseForm = $CI->parser->parse('purchase/add_purchase_form', $data, true);
+    return $purchaseForm;
+}
+
+
+
 	// Retrieve Purchase List
     public function purchase_list() {
         $CI = & get_instance();
@@ -143,6 +165,10 @@ class Lpurchase {
 		$CI->load->model('Web_settings');
 
 		$purchase_detail  = $CI->Purchases->retrieve_purchase_editdata($purchase_id);
+		/*echo '<pre>';
+       var_dump($purchase_detail);
+         echo '</pre>';*/
+            //exit; // Stop execution to inspect the output
 		$manufacturer_id  = $purchase_detail[0]['manufacturer_id'];
 		$manufacturer_list=	$CI->manufacturers->manufacturer_list("110","0");
 		 $bank_list       = $CI->Web_settings->bank_list();
@@ -162,6 +188,7 @@ class Lpurchase {
 			'chalan_no'			=>	$purchase_detail[0]['chalan_no'],
 			'manufacturer_name'	=>	$purchase_detail[0]['manufacturer_name'],
 			'manufacturer_id'	=>	$purchase_detail[0]['manufacturer_id'],
+			'stock_id'	        =>	   $purchase_detail[0]['stock_id'],
 			'grand_total'		=>	$purchase_detail[0]['grand_total_amount'],
 			'purchase_details'	=>	$purchase_detail[0]['purchase_details'],
 			'purchase_date'		=>	$purchase_detail[0]['purchase_date'],

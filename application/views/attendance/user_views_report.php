@@ -61,6 +61,7 @@
                     <thead>
                         <tr>
                             <th><?php echo display('Sl') ?></th>
+                            <th><?php echo display('stock_name') ?></th>
                             <th><?php echo display('employee_name') ?></th>
                             <th><?php echo display('date') ?></th>
                              <th><?php echo display('sign_in') ?></th>
@@ -79,6 +80,7 @@
                          ?>
                                 <tr class="<?php echo ($sl & 1)?"odd gradeX":"even gradeC" ?>">
                                     <td><?php echo $sl; ?></td>
+                                     <td><?php echo $que->stock_name; ?></td>
                                     <td><?php echo $que->first_name.' '.$que->last_name; ?></td>
                                     <td><?php echo $que->date; ?></td>
                                     <td><?php echo $que->sign_in; ?></td>
@@ -100,6 +102,18 @@
         </div>
     </section>
 </div>
+<script>
+$(document).ready(function() {
+    $('.datatable').DataTable({
+        "paging": true,           // Enable pagination
+        "searching": true,        // Enable search box
+        "ordering": true,         // Enable sorting
+        "order": [[0, "asc"]],    // Default order by first column (Sl)
+        "lengthMenu": [10, 25, 50, 100] // Rows per page
+    });
+});
+</script>
+
 
 
 

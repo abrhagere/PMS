@@ -62,6 +62,33 @@
                                     </div>
                                 </div>
                             </div>
+                                  <div class="row">
+                                      <div class="col-sm-12">
+                                <div class="form-group row">
+                                    <label for="date" class="col-sm-4 col-form-label"><?php echo display('stock_name') ?>
+                                        <i class="text-danger">*</i>
+                                    </label>
+                                    <div class="col-sm-8">
+                                       <select name="stock_name" id="stock_id" class="form-control" required tabindex="1"> 
+                                     <option value=""><?php echo display('select_stock'); ?></option>
+                                           <?php 
+                                           if (!empty($all_stock) && is_array($all_stock)) { 
+                                               foreach ($all_stock as $specific_stock) {
+                                           ?>
+                                               <option value="<?php echo $specific_stock['id']; ?>">
+                                                   <?php echo $specific_stock['stock_name']; ?>
+                                               </option>
+                                           <?php
+                                               }
+                                           } else {
+                                             echo '<option value="">No stocks assigned</option>';
+                                           }
+                                           ?>
+                        </select>
+
+                                    </div>
+                                </div>
+                            </div>
                              <div class="col-sm-12" id="payment_from_1">
                                 <div class="form-group row">
                                     <label for="expense_type" class="col-sm-4 col-form-label"><?php
@@ -110,6 +137,9 @@
                                  
                                 </div>
                             </div>
+                            <!-- description-->
+                            
+                            
                             <div class="col-sm-12" id="payment_from_1">
                          <div class="form-group row">
                         <label for="date" class="col-sm-4 col-form-label"><?php echo display('amount')?><i class="text-danger">*</i></label>
@@ -117,6 +147,20 @@
                              <input type="text" name="amount" id="amount" class="form-control"  required="">
                             
                         </div>
+                     
+                         <div class="col-sm-12" id="" style="">
+                                <div class="form-group row">
+                                    <br>
+                                    <label for="desc" class="col-sm-4 col-form-label"><?php
+                                        echo display('description');
+                                        ?> </label>
+                                    <div class="col-sm-8">
+                                   <textarea name="desc" id="desc" class="form-control"></textarea>
+                                    </div>
+                                 
+                                </div>
+                            </div>
+                             <!-- description end-->
                     </div> 
                     </div>
            

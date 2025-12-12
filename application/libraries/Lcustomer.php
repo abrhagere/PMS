@@ -159,8 +159,13 @@ class Lcustomer {
 	public function customer_add_form(){
 		$CI =& get_instance();
 		$CI->load->model('Customers');
+		$CI->load->model('Stocks');
+		$user_id = $CI->session->userdata('user_id');
+		
+		$all_stock = $CI->Stocks->get_stocks_assigned_to_user($user_id);
 		$data = array(
-				'title' => display('add_customer')
+				'title' => display('add_customer'),
+				'all_stock' => $all_stock
 			);
 		$customerForm = $CI->parser->parse('customer/add_customer_form',$data,true);
 		return $customerForm;

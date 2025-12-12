@@ -101,8 +101,45 @@ class Permission1
 		if ($this->permission) { 
 			return $this->permission;
 		} else {
+			// Check if user is a clinic role, redirect to clinic dashboard instead
+			$user_id = $this->ci->session->userdata('user_id');
+			$redirect_url = $this->redirect;
+			
+			// Get current URI to prevent redirect loops
+			$current_uri = $this->ci->uri->uri_string();
+			
+			if ($user_id) {
+				// Convert user_id to string to match database format (sec_userrole.user_id is varchar)
+				$user_id_str = (string)$user_id;
+				
+				$this->ci->db->select('sr.type');
+				$this->ci->db->from('sec_userrole sur');
+				$this->ci->db->join('sec_role sr', 'sr.id = sur.roleid');
+				$this->ci->db->where('sur.user_id', $user_id_str);
+				$this->ci->db->where_in('sr.type', array('Reception', 'Doctor', 'Nurse', 'Lab Technician'));
+				$query = $this->ci->db->get();
+				
+				if ($query->num_rows() > 0) {
+					// User is a clinic role, redirect to clinic dashboard
+					$redirect_url = 'clinic/dashboard';
+					
+					// Prevent redirect loop - if already on clinic/dashboard, don't redirect
+					if (strpos($current_uri, 'clinic/dashboard') !== false) {
+						// Already on clinic dashboard, just show error message
+						$this->ci->session->set_flashdata('exception', "You do not have permission to access this module. Please contact with administrator.");
+						return false;
+					}
+				}
+			}
+			
+			// Prevent redirect loop - don't redirect to same page
+			if (strpos($current_uri, $redirect_url) !== false) {
+				$this->ci->session->set_flashdata('exception', "You do not have permission to access. Please contact with administrator.");
+				return false;
+			}
+			
 			$this->ci->session->set_flashdata('exception', "You do not have permission to access. Please contact with administrator.");
-			redirect($this->redirect);
+			redirect($redirect_url);
 		}
 	}
 

@@ -25,13 +25,17 @@ function addInputField(t) {
             tab9 = tabindex + 9;
             tab10 = tabindex + 10;
             tab11 = tabindex + 11;
-        e.innerHTML = "<td><input type='text' name='product_name' onkeyup='invoice_productList(" + count + ");' onkeypress='invoice_productList(" + count + ");' class='form-control productSelection' placeholder='Product Name' id='" + a + "' required tabindex='"+tab1+"'><input type='hidden' class='autocomplete_hidden_value  product_id_" + count + "' name='product_id[]' id='SchoolHiddenId'/></td>" +
+       e.innerHTML = "<td><input type='text' name='product_name' onkeyup='invoice_productList(" + count + ");' onkeypress='invoice_productList(" + count + ");' class='form-control productSelection' placeholder='Product Name' id='" + a + "' required tabindex='"+tab1+"'><input type='hidden' class='autocomplete_hidden_value product_id_" + count + "' name='product_id[]' id='SchoolHiddenId'/></td>" +
 
 "<td><select class='form-control' required id='batch_id_" + count + "' name='batch_id[]' onchange='product_stock(" + count + ")' tabindex='"+tab2+"'><option></option></select></td>" +
 
-"<td><select class='form-control' required id='invoice_id_" + count + "' name='inv_id[]' onchange='invoice_stock(" + count + ")'><option></option></select></td>" +   // <<-- Added invoice dropdown here
+"<td><select class='form-control' required id='invoice_id_" + count + "' name='inv_id[]' onchange='invoice_stock(" + count + ")'><option></option></select></td>" +
 
-"<td><input type='text' name='available_quantity[]' id='available_quantity_" + count + "' class='form-control text-right available_quantity_" + count + "' value='0' readonly='readonly' /></td>" +
+"<td>" +
+    "<input type='text' name='available_quantity[]' id='available_quantity_" + count + "' class='form-control text-right available_quantity_" + count + "' value='0' readonly='readonly' style='width:130px;' />" +
+    "<input type='hidden' name='manufacturer_rate[]' id='manufacturer_rate_" + count + "' class='form-control text-right manufacturer_rate_" + count + "' value='0' style='width:130px;' />" +
+"</td>" +
+
 "<td id='expire_date_" + count + "'></td>" +
 "<td><input class='form-control text-right unit_" + count + " valid' value='None' readonly='' aria-invalid='false' type='text'></td>" +
 "<td><input type='text' name='product_quantity[]' onkeyup='quantity_calculate(" + count + "),checkqty(" + count + ");' onchange='quantity_calculate(" + count + ");' id='total_qntt_" + count + "' class='total_qntt_" + count + " form-control text-right' placeholder='0.00' min='0' tabindex='"+tab3+"' required/></td>" +
@@ -39,6 +43,7 @@ function addInputField(t) {
 "<td><input type='text' name='discount[]' onkeyup='quantity_calculate(" + count + "),checkqty(" + count + ");' onchange='quantity_calculate(" + count + ");' id='discount_" + count + "' class='form-control text-right' placeholder='0.00' min='0' tabindex='"+tab5+"' /><input type='hidden' value='' name='discount_type' id='discount_type_" + count + "'></td>" +
 "<td class='text-right'><input class='total_price form-control text-right' type='text' name='total_price[]' id='total_price_" + count + "' value='0.00' readonly='readonly'/></td>" +
 "<td>" + tbfild + "<input type='hidden' id='all_discount_" + count + "' class='total_discount dppr'/><a tabindex='"+tab6+"' style='text-align: right;' class='btn btn-danger' value='Delete' onclick='deleteRow(this)'><i class='fa fa-close'></i></a></td>";
+
 
         document.getElementById(t).appendChild(e), 
         document.getElementById(a).focus(),

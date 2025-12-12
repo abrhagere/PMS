@@ -67,6 +67,7 @@
         <thead>
             <tr>
                <th><?php echo display('Sl') ?></th>
+               <th><?php echo display('stock_name') ?></th>
                 <th><?php echo display('name')?></th>
                 <th><?php echo display('date')?></th>
                 <th><?php echo display('checkin')?></th>
@@ -78,12 +79,13 @@
     <tbody>
         <?php if ($attendance_list == FALSE): ?>
 
-            <tr><td colspan="4">There are currently No Attendance</td></tr>
+            <tr><td colspan="8">There are currently No Attendance</td></tr>
         <?php else: ?>
              <?php $sl = 1; ?> 
             <?php foreach ($attendance_list as $row): ?>
                 <tr class="<?php echo ($sl & 1)?"odd gradeX":"even gradeC" ?>">
-                <td><?php echo $sl; ?></td>
+                   <td><?php echo $sl; ?></td>
+                   <td><?php echo $row['stock_name']; ?></td>
                     <td><?php echo $row['first_name'].' '.$row['last_name']; ?></td>
                     <td><?php echo $row['date']; ?></td>
                     <td><?php echo $row['sign_in']; ?></td>
@@ -118,6 +120,32 @@
         </div>
     </section>
 </div>
+
+<script>
+$(document).ready(function() {
+    // Only initialize DataTable if table has at least one row
+    if ($('.datatable tbody tr').length > 0) {
+
+        // Remove empty/trash rows with fewer <td> than header
+        $('.datatable tbody tr').each(function() {
+            if ($(this).find('td').length < $('.datatable thead th').length) {
+                $(this).remove();
+            }
+        });
+
+        $('.datatable').DataTable({
+            paging: false,       // CI handles pagination
+            searching: true,
+            ordering: true,
+            order: [[0, "asc"]],
+            columnDefs: [
+                { orderable: false, targets: 7 } // Disable action column sorting
+            ]
+        });
+    }
+});
+</script>
+
 
 
 

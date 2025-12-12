@@ -154,9 +154,22 @@ class Service extends CI_Model {
         return $data2;
     }
     // Employee list
-    public function employee_list(){
-        return $list = $this->db->select('*')->from('employee_history')->get()->result_array();
+   public function employee_list($user_id = null) {
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+    $this->db->select('eh.*, s.stock_name, s.assign_users');
+    $this->db->from('employee_history eh');
+    $this->db->join('stock s', 's.id = eh.stock_id', 'left');
+
+    // If a user ID is provided, filter by assign_users JSON
+    if ($user_id) {
+        $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
     }
+
+    $list = $this->db->get()->result_array();
+    return $list;
+}
+
 
     public function invoice_entry(){
         $this->load->model('Web_settings');
@@ -421,6 +434,9 @@ $service_income = array(
         return $invoice_id;
     }
 
+
+
+
      public function number_generator() {
         $this->db->select_max('voucher_no', 'voucher_no');
         $query = $this->db->get('service_invoice');
@@ -434,16 +450,59 @@ $service_income = array(
         return $voucher_no;
     }
           // Service invoice list
-            public function service_invoice_list($limit = null, $start = null)
-    {
-             return $this->db->select('a.*,b.customer_name')   
-            ->from('service_invoice a')
-            ->join('customer_information b','b.customer_id=a.customer_id','left')
-            ->order_by('a.id', 'desc')
-            ->limit($limit, $start)
-            ->get()
-            ->result_array();
+           public function service_invoice_list($limit = null, $start = null)
+       {
+    $CI = &get_instance();
+    $user_id = $CI->session->userdata('user_id'); // get the current logged-in user ID
+
+    $this->db->select('a.*, b.customer_name, s.stock_name, s.assign_users,em.first_name as fname,em.last_name as lname,u.first_name,u.last_name');
+    $this->db->from('service_invoice a');
+     $this->db->join('employee_history em','em.id=a.employee_id','left');
+     $this->db->join('users u','u.user_id=a.user_id','left');
+    $this->db->join('service_invoice_details d','d.service_inv_id=a.voucher_no','left');
+    // Join customer information
+    $this->db->join('customer_information b', 'b.customer_id = a.customer_id', 'left');
+    // Join stock information
+    $this->db->join('stock s', 's.id = b.stock_id', 'left');
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+
+    // Only show invoices for stock assigned to this user
+    
+    $this->db->order_by('a.id', 'desc');
+
+    if ($limit !== null && $start !== null) {
+        $this->db->limit($limit, $start);
     }
+
+    $query = $this->db->get();
+    return $query->result_array();
+}
+
+public function filter_service_invoice($from_date = null, $to_date = null)
+{
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+    $this->db->select('a.*, b.customer_name, s.stock_name, s.assign_users, em.first_name as fname, em.last_name as lname, u.first_name, u.last_name');
+    $this->db->from('service_invoice a');
+    $this->db->join('employee_history em','em.id=a.employee_id','left');
+    $this->db->join('users u','u.user_id=a.user_id','left');
+    $this->db->join('service_invoice_details d','d.service_inv_id=a.voucher_no','left');
+    $this->db->join('customer_information b', 'b.customer_id = a.customer_id', 'left');
+    $this->db->join('stock s', 's.id = b.stock_id', 'left');
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+
+    // Filter by date range if provided
+    if(!empty($from_date) && !empty($to_date)){
+        $this->db->where('a.date >=', $from_date);
+        $this->db->where('a.date <=', $to_date);
+    }
+
+    $this->db->order_by('a.id', 'desc');
+
+    $query = $this->db->get();
+    return $query->result_array();
+}
+
 
     // Service Invoice Delete
     public function delete_service_invoice($invoice_id){
@@ -601,7 +660,7 @@ $service_income = array(
             'customer_id'     => $customer_id,
             'invoice_no'      => $invoice_id,
             'date'            => (!empty($this->input->post('invoice_date'))?$this->input->post('invoice_date'):date('Y-m-d')),
-            'amount'          => $this->input->post('n_total')-(!empty($this->input->post('previous'))?$this->input->post('previous'):0),
+            'amount'          => $this->input->post('n_total1'),
             'description'     => 'Service ',
             'status'          => 1,
             'd_c'             => 'd'

@@ -243,7 +243,7 @@
                                     <input type="text" onkeyup="quantity_calculate(1);"  onchange="quantity_calculate(1);" id="invoice_discount" class="form-control text-right" name="invoice_discount" placeholder="0.00"  value="{invoice_discount}" />
                                         <input type="hidden" id="txfieldnum">
                                 </td>
-                                <td><input type="button" id="add_invoice_item" class="btn btn-info" name="add-invoice-item"  onClick="addInputField('addinvoiceItem');" value="<?php echo display('add') ?>" /></td>
+                                <td></td>
                                 </tr>
 
                      
@@ -303,6 +303,7 @@
                                     <td colspan="4"  style="text-align:right;"><b><?php echo display('net_total'); ?>:</b></td>
                                     <td class="text-right">
                                         <input type="text" id="n_total" class="form-control text-right" name="n_total" value="{total_amount}" readonly="readonly" placeholder="" />
+                                        <input type="hidden" id="n_total1" name="n_total1" value="{total_amount}">
                                     </td>
                                 </tr>
                                 <tr>

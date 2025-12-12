@@ -109,6 +109,7 @@ class Ccustomer extends CI_Controller {
 	  	//Customer  basic information adding.
 		$data=array(
 			'customer_name' 		=> $this->input->post('customer_name'),
+			'stock_id' 		=> $this->input->post('stock_name'),
 			'customer_address' 		=> $this->input->post('address'),
 			'customer_mobile' 		=> $this->input->post('mobile'),
 			'customer_email' 		=> $this->input->post('email'),

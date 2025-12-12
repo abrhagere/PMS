@@ -74,6 +74,36 @@
                                     </div>
                                 </div>
                             </div>
+        <!-- stock_name -->
+         <div class="row">
+                          <div class="col-sm-6">
+                                <div class="form-group row">
+                                    <label for="date" class="col-sm-4 col-form-label"><?php echo display('stock_name') ?>
+                                        <i class="text-danger">*</i>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <select name="stock_name" id="stock_id" class="form-control" required tabindex="1"> 
+                                     <option value=""><?php echo display('select_stock'); ?></option>
+                                           <?php 
+                                           if (!empty($all_stock) && is_array($all_stock)) { 
+                                               foreach ($all_stock as $specific_stock) {
+                                           ?>
+                                               <option value="<?php echo $specific_stock['id']; ?>">
+                                                   <?php echo $specific_stock['stock_name']; ?>
+                                               </option>
+                                           <?php
+                                               }
+                                           } else {
+                                             echo '<option value="">No stocks assigned</option>';
+                                           }
+                                           ?>
+                         </select>
+                                       
+                                    </div>
+                                </div>
+                            </div>
+        </div>
+         <!-- end of stock_name-->
                             <div class="col-sm-6" id="payment_from_1">
                                 <div class="form-group row">
                                     <label for="payment_type" class="col-sm-4 col-form-label"><?php

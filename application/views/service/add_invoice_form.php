@@ -102,9 +102,9 @@
                     <?php echo form_open_multipart('Cservice/insert_service_invoice', array('class' => 'form-vertical', 'id' => '', 'name' => '')) ?>
                     <div class="panel-body">
                         <div class="row">
-
                             <div class="col-sm-8" id="payment_from_1">
                                 <div class="form-group row">
+                                   
                                     <label for="customer_name" class="col-sm-3 col-form-label"><?php
                                         echo display('customer_name').'/'.display('phone');
                                         ?> <i class="text-danger">*</i></label>

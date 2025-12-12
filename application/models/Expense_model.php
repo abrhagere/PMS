@@ -6,6 +6,8 @@ class Expense_model extends CI_Model {
            $voucher_no = date('Ymdhis');
             $Vtype="Expense";
             $expense_type = $this->input->post('expense_type');
+            $stock_id = $this->input->post('stock_name');
+             $desc = $this->input->post('desc');
             $pay_type = $this->input->post('paytype');
             $cAID     = $this->input->post('cmbDebit');
             $Credit   = $this->input->post('amount');
@@ -27,6 +29,8 @@ class Expense_model extends CI_Model {
             'bank_id'     => $bank_id,
             'description' => $expense_type.' Expense',
             'deposite_id' => $voucher_no,
+            'stock_id'    => $stock_id,  // now valid
+           
             'dr'          =>  null,
             'cr'          => (!empty($Credit) ? $Credit : null),
             'ammount'     => $Credit,
@@ -37,6 +41,8 @@ class Expense_model extends CI_Model {
             $expense = array(
       'voucher_no'     =>  $voucher_no,
       'type'           =>  $expense_type,
+      'stock_id'    => $stock_id,  // now valid
+       'description'    => $desc,  // now valid
       'date'           =>  $VDate,
       'amount'         =>  $Credit,
     ); 
@@ -100,15 +106,27 @@ class Expense_model extends CI_Model {
     return true;
 }
 
-        public function expense_list($limit = null, $start = null)
-    {
-             return $this->db->select('*')   
-            ->from('expense')
-            ->order_by('id', 'desc')
-            ->limit($limit, $start)
-            ->get()
-            ->result_array();
+   public function expense_list($limit = null, $offset = null)
+{
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+    $this->db->select('e.*, s.stock_name');
+    $this->db->from('expense e');
+    $this->db->join('stock s', 's.id = e.stock_id', 'left');
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'",null,false);
+    $this->db->order_by('e.date', 'DESC');
+
+    if ($limit !== null && $offset !== null) {
+        $this->db->limit($limit, $offset);
     }
+
+    $query = $this->db->get();
+    return $query->result_array();
+}
+
+
+
+
 
         public function expense_delete($voucher_no = null)
 {
@@ -213,6 +231,8 @@ class Expense_model extends CI_Model {
 
     // fetch expense
     public function getExpenseList($postData=null){
+        $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
     $response = array();
     $fromdate = $this->input->post('fromdate');
     $todate   = $this->input->post('todate');
@@ -237,41 +257,89 @@ class Expense_model extends CI_Model {
     }
 
     // Total records
-    $this->db->select('COUNT(DISTINCT type) as allcount');
-    $this->db->from('expense');
-    if($datbetween) $this->db->where($datbetween);
-    if($searchQuery) $this->db->where($searchQuery);
-    $totalRecords = $this->db->get()->row()->allcount;
+  $this->db->select('COUNT(DISTINCT e.type) as allcount');
+$this->db->from('expense e');
+$this->db->join('stock s', 's.id = e.stock_id', 'left');
+
+if ($datbetween) {
+    $this->db->where($datbetween);
+}
+
+if ($searchQuery) {
+    $this->db->where($searchQuery);
+}
+
+// Optional: filter by assigned user
+if (!empty($user_id)) {
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+}
+
+$totalRecords = $this->db->get()->row()->allcount;
 
     // Filtered records (same as total if using search)
-    $this->db->select('COUNT(DISTINCT type) as allcount');
-    $this->db->from('expense');
-    if($datbetween) $this->db->where($datbetween);
-    if($searchQuery) $this->db->where($searchQuery);
-    $totalRecordwithFilter = $this->db->get()->row()->allcount;
+   $this->db->select('COUNT(DISTINCT e.type) as allcount');
+$this->db->from('expense e');
+$this->db->join('stock s', 's.id = e.stock_id', 'left');
+
+if ($datbetween) {
+    $this->db->where($datbetween);
+}
+
+if ($searchQuery) {
+    $this->db->where($searchQuery);
+}
+
+// Optional: Filter by assigned user
+if (!empty($user_id)) {
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+}
+
+$totalRecordwithFilter = $this->db->get()->row()->allcount;
+
 
     // Fetch data with aggregation
-    $this->db->select('type, SUM(amount) AS total_amount');
-    $this->db->from('expense');
-    if($datbetween) $this->db->where($datbetween);
-    if($searchQuery) $this->db->where($searchQuery);
-    $this->db->group_by('type');
-    $this->db->order_by($columnName, $columnSortOrder);
-    $this->db->limit($rowperpage, $start);
+   $this->db->select('e.type, SUM(e.amount) AS total_amount, s.stock_name, s.assign_users');
+$this->db->from('expense e');
+$this->db->join('stock s', 's.id = e.stock_id', 'left');
 
-    $records = $this->db->get()->result();
+if ($datbetween) {
+    $this->db->where($datbetween);  // e.g., "e.date BETWEEN '2025-10-01' AND '2025-10-31'"
+}
+
+if ($searchQuery) {
+    $this->db->where($searchQuery); // e.g., "e.type LIKE '%Transport%'"
+}
+
+// Optional: filter by assigned user
+if (!empty($user_id)) {
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+}
+
+// Group by type (to get totals per type)
+$this->db->group_by('e.type');
+
+// Sorting
+$this->db->order_by($columnName, $columnSortOrder);
+
+// Pagination
+$this->db->limit($rowperpage, $start);
+
+// Execute query
+$records = $this->db->get()->result();
+
 
     $data = array();
     $sl = 1;
    foreach($records as $record){
     $link_url = base_url('Cexpense/expense_detail/' . $record->type); // Adjust as needed
 
-    $data[] = array(
-        'sl' => $sl,
-        // Make 'type' clickable:
-        'type' => '<a href="'.$link_url.'">'.htmlspecialchars($record->type).'</a>',
-        'total_amount' => $record->total_amount
-    );
+  $data[] = array(
+    'sl'           => $sl,
+    'type'         => '<a href="'.$link_url.'">'.htmlspecialchars($record->type).'</a>',
+    'total_amount' => $record->total_amount,
+    'stock_name'   => isset($record->stock_name) ? htmlspecialchars($record->stock_name) : 'N/A'
+);
+
     $sl++;
 }
 
@@ -287,11 +355,20 @@ class Expense_model extends CI_Model {
     echo json_encode($response);
     exit;
 }
-public function get_expense_details_by_type($type)
+public function get_expense_details_by_type($type, $user_id = null)
 {
-    $this->db->select('*');
-    $this->db->from('expense');  // replace with your actual table name
-    $this->db->where('type', $type);
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+    $this->db->select('e.*, s.stock_name, s.assign_users');
+    $this->db->from('expense e');
+    $this->db->join('stock s', 's.id = e.stock_id', 'left');
+    $this->db->where('e.type', $type);
+
+    // Optional: filter by assigned user
+    if ($user_id !== null) {
+        $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+    }
+
     $query = $this->db->get();
 
     if ($query->num_rows() > 0) {
@@ -300,6 +377,7 @@ public function get_expense_details_by_type($type)
         return []; // return empty array if no data
     }
 }
+
 
 
 

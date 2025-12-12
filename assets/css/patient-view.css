@@ -1,0 +1,266 @@
+/* Patient View Custom Styles */
+/* Scrollable Tabs Styles */
+.visit-tabs-container {
+    position: relative !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    background: #f5f5f5 !important;
+    border-bottom: 2px solid #ddd !important;
+}
+
+.visit-tabs {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border-bottom: none !important;
+    min-width: 100% !important;
+}
+
+.visit-tabs > li {
+    float: none !important;
+    display: inline-block !important;
+    white-space: nowrap !important;
+    margin: 0 !important;
+}
+
+.nav-tabs.visit-tabs > li > a,
+.visit-tabs > li > a {
+    padding: 12px 20px !important;
+    color: #666 !important;
+    border: none !important;
+    border-bottom: 3px solid transparent !important;
+    border-radius: 0 !important;
+    font-weight: 500 !important;
+    white-space: nowrap !important;
+    transition: all 0.3s ease !important;
+}
+
+.nav-tabs.visit-tabs > li > a:hover,
+.visit-tabs > li > a:hover {
+    background-color: #f0f0f0 !important;
+    color: #1a237e !important;
+    border-bottom-color: #1a237e !important;
+}
+
+.nav-tabs.visit-tabs > li.active > a,
+.nav-tabs.visit-tabs > li.active > a:hover,
+.nav-tabs.visit-tabs > li.active > a:focus,
+.visit-tabs > li.active > a,
+.visit-tabs > li.active > a:hover,
+.visit-tabs > li.active > a:focus {
+    color: #1a237e !important;
+    background-color: #fff !important;
+    border-bottom-color: #1a237e !important;
+    font-weight: bold !important;
+}
+
+.visit-tabs > li > a i {
+    margin-right: 5px;
+}
+
+/* Scrollbar styling for tabs */
+.visit-tabs-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.visit-tabs-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.visit-tabs-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.visit-tabs-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Tab content styling */
+.tab-content {
+    background: #fff;
+}
+
+.tab-pane {
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .visit-tabs > li > a {
+        padding: 10px 15px;
+        font-size: 12px;
+    }
+    
+    .visit-tabs > li > a i {
+        display: none;
+    }
+}
+
+/* Investigation Tabs Styles */
+.investigation-type-tabs {
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 15px;
+}
+
+.investigation-type-tabs > li > a {
+    color: #666;
+    font-weight: 500;
+}
+
+.investigation-type-tabs > li.active > a {
+    color: #1a237e;
+    font-weight: bold;
+    border-bottom: 3px solid #1a237e;
+}
+
+/* Lab Category Tabs (Scrollable) */
+.lab-category-container {
+    position: relative;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    background: #f5f5f5;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 15px;
+}
+
+.lab-category-tabs {
+    display: flex;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+    margin: 0;
+    padding: 0;
+    border-bottom: none;
+    min-width: 100%;
+}
+
+.lab-category-tabs > li {
+    float: none;
+    display: inline-block;
+    white-space: nowrap;
+    margin: 0;
+}
+
+.lab-category-tabs > li > a {
+    padding: 10px 20px;
+    color: #666;
+    border: none;
+    border-bottom: 3px solid transparent;
+    border-radius: 0;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.lab-category-tabs > li > a:hover {
+    background-color: #f0f0f0;
+    color: #1a237e;
+    border-bottom-color: #1a237e;
+}
+
+.lab-category-tabs > li.active > a,
+.lab-category-tabs > li.active > a:hover,
+.lab-category-tabs > li.active > a:focus {
+    color: #1a237e;
+    background-color: #fff;
+    border-bottom-color: #1a237e;
+    font-weight: bold;
+}
+
+.lab-category-container::-webkit-scrollbar {
+    height: 6px;
+}
+
+.lab-category-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.lab-category-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 3px;
+}
+
+.lab-category-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Test Selection Styles */
+.test-group {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: #fff;
+    border-radius: 5px;
+    border: 1px solid #e0e0e0;
+}
+
+.test-item {
+    display: block;
+    padding: 8px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.2s;
+}
+
+.test-item:hover {
+    background: #f0f0f0;
+}
+
+.test-item input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.test-checkbox:checked + span,
+.test-item:has(input:checked) {
+    color: #1a237e;
+    font-weight: bold;
+}
+
+.lab-category-content {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+/* Admission Form Styles */
+#orderSheetEditor {
+    min-height: 200px;
+    border: 1px solid #ddd;
+    padding: 15px;
+    background: #fff;
+    border-radius: 4px;
+    cursor: text;
+    overflow-y: auto;
+}
+
+#orderSheetEditor:focus {
+    outline: none;
+    border-color: #1a237e;
+    box-shadow: 0 0 5px rgba(26, 35, 126, 0.3);
+}
+
+#orderSheetEditor p {
+    margin: 5px 0;
+}
+
+#orderSheetEditor[contenteditable="true"] {
+    background: #fafafa;
+}
+
+/* Ward selection styling */
+#ward_id option {
+    padding: 10px;
+}
+

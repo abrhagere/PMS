@@ -6,11 +6,20 @@ class Payment extends CI_Model{
 
 //expense for payment
 public function sum_payments() {
-    $this->db->select_sum('total_salary');
-    $this->db->where('payment_due', 'paid');  // Add your condition here
-    $query = $this->db->get('employee_salary_payment');
-    return $query->row()->total_salary ?? 0;  // Make sure to return the correct field name
+    $CI =& get_instance();
+    $user_id = $CI->session->userdata('user_id');
+
+    $this->db->select_sum('esp.total_salary', 'total_salary'); // use alias
+    $this->db->from('employee_salary_payment esp');
+    $this->db->join('employee_history e', 'e.id = esp.employee_id', 'left');
+    $this->db->join('stock s', 's.id = e.stock_id', 'left');
+    $this->db->where("s.assign_users LIKE '%\"$user_id\"%'", null, false);
+    $this->db->where('esp.payment_due', 'paid');
+
+    $query = $this->db->get();
+    return (float) $query->row()->total_salary ?? 0; // force float
 }
+
 
 
 public function add_payment($data = array())
@@ -35,7 +44,6 @@ public function payment_list($per_page,$page)
      }
      return false;
   }
-
   public function delete_payment($id){
     $this->db->where('transaction_id',$id);
     $this->db->delete('transection');

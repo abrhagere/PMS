@@ -120,7 +120,40 @@
                     </div>
                      <?php echo form_open_multipart('Cinvoice/manual_sales_insert', array('class' => 'form-vertical', 'id' => 'insert_sale', 'name' => '')) ?>
                     <div class="panel-body">
+                    <div class="row">
+                             <!-- stock -->
+                             <div class="col-sm-6">
+                               <div class="form-group row">
+                                    <label for="stock" class="col-sm-3 col-form-label"><?php echo display('stock')?>
+                                        <i class="text-danger">*</i>
+                                    </label>
+                                    <div class="col-sm-6">
+                                    <select name="stock_name" id="stock_id" class="form-control" required tabindex="1"> 
+                                <option value=""><?php echo display('select_stock'); ?></option>
+                                           <?php 
+                                           if (!empty($all_stock) && is_array($all_stock)) { 
+                                               foreach ($all_stock as $specific_stock) {
+                                           ?>
+                                               <option value="<?php echo $specific_stock['id']; ?>">
+                                                   <?php echo $specific_stock['stock_name']; ?>
+                                               </option>
+                                           <?php
+                                               }
+                                           } else {
+                                             echo '<option value="">No stocks assigned</option>';
+                                           }
+                                           ?>
+                                </select>
+
+
+                                    </div>
+
+                                </div> 
+                            </div>
+                            <!-- end of stock -->
+                        </div>
                         <div class="row">
+                            
                             <div class="col-sm-6" id="payment_from_1">
                                 <div class="form-group row">
                                     <label for="customer_name" class="col-sm-3 col-form-label"><?php echo
@@ -130,31 +163,10 @@
 
                                         <input id="autocomplete_customer_id" class="customer_hidden_value abc" type="hidden" name="customer_id"  value="{customer_id}">
                                     </div>
-                                    <div  class=" col-sm-3">
-                                        <input id="myRadioButton_1" type="button" onClick="active_customer('payment_from_1')" id="myRadioButton_1" class="btn btn-success checkbox_account ac" name="customer_confirm" checked="checked" value="<?php echo display('new_customer') ?>" tabindex="2">
-                                    </div>
+                                    
                                 </div>
                             </div>
-
-                            <div class="col-sm-8" id="payment_from_2">
-                               <div class="form-group row">
-                                    <label for="customer_name_others" class="col-sm-3 col-form-label"><?php echo display('payee_name') ?> <i class="text-danger">*</i></label>
-                                    <div class="col-sm-6">
-                                        <input  autofill="off" type="text"  size="100" name="customer_name_others" placeholder='<?php echo display('payee_name') ?>' id="customer_name_others" class="form-control" />
-                                    </div>
-
-                                    <div  class="col-sm-3">
-                                        <input  onClick="active_customer('payment_from_2')" type="button" id="myRadioButton_2" class="checkbox_account btn btn-success" name="customer_confirm_others" value="<?php echo display('old_customer') ?>">
-                                    </div>
-                                </div>
-
-                                <div class="form-group row">
-                                    <label for="customer_name_others_address" class="col-sm-3 col-form-label"><?php echo display('address') ?> </label>
-                                    <div class="col-sm-6">
-                                       <input type="text"  size="100" name="customer_name_others_address" class=" form-control" placeholder='<?php echo display('address') ?>' id="customer_name_others_address" />
-                                    </div>
-                                </div>
-                            </div>
+                            
                              <div class="col-sm-6" id="payment_from">
                                 <div class="form-group row">
                                     <label for="payment_type" class="col-sm-4 col-form-label"><?php
@@ -201,6 +213,7 @@
                              
                             </div>
                         </div>
+                       
                         </div>
 
                         <div class="table-responsive" style="margin-top: 10px">
@@ -257,10 +270,6 @@
 
 </td>
        
-
-  
-
-
 
                                        <td id="expire_date_1"></td>
 
@@ -598,6 +607,8 @@ $(document ).ready(function() {
 });
 function product_stock(sl) {
     var batch_id   = $('#batch_id_' + sl).val();
+     var stock_id   = $('#stock_id').val();
+    console.log("Stock ID:", stock_id);
     var product_id = $('.product_id_' + sl).val();
     var invoice_select = 'invoice_id_' + sl; // invoice select element
     var available_quantity = 'available_quantity_' + sl;
@@ -611,7 +622,11 @@ function product_stock(sl) {
     $.ajax({
         type: "POST",
         url: base_url + "Cinvoice/retrieve_product_batchid",
-        data: { batch_id: batch_id, product_id: product_id },
+       data: {
+        batch_id: batch_id,
+        product_id: product_id,
+        stock_id: stock_id || 0 // send 0 or default if undefined
+    },
         cache: false,
         success: function(data) {
             try {
@@ -644,7 +659,7 @@ function product_stock(sl) {
             $.ajax({
                 type: "POST",
                 url: base_url + "Cinvoice/retrieve_invoice_by_batch",
-                data: { product_id: product_id, batch_id: batch_id },
+                data: { product_id: product_id, batch_id: batch_id,stock_id:stock_id },
              success: function(data) {
     try {
         console.log("Raw invoice data:", data); // raw response
@@ -688,6 +703,7 @@ function invoice_stock(sl) {
     var available_quantity = 'available_quantity_' + sl;
     var expire_date        = 'expire_date_' + sl;
     var base_url           = $('.baseUrl').val();
+    var stock_id           = $("#stock_id").val();
     var priceClass         = 'price_item' + sl;
     var manufacturer_rate  = 'manufacturer_rate_' + sl;
 
@@ -699,6 +715,7 @@ function invoice_stock(sl) {
         var rowSl = $(this).attr("id").split("_")[2];
         var pId   = $('.product_id_' + rowSl).val();
         var bId   = $('#batch_id_' + rowSl).val();
+        //var stock_id=$("#stock_id").val();
         var invId = $(this).val();
 
         if (rowSl != sl && pId == product_id && bId == batch_id && invId == invoice_id && invoice_id !== '') {
@@ -722,7 +739,8 @@ function invoice_stock(sl) {
         data: {
             product_id: product_id,
             batch_id: batch_id,
-            invoice_id: invoice_id
+            invoice_id: invoice_id,
+            stock_id: stock_id
         },
         success: function(data) {
             try {
@@ -877,6 +895,11 @@ function customer_autocomplete(sl) {
 <script type="text/javascript">
 
 function invoice_productList(sl) {
+    var stock_id = $('#stock_id').val()
+    if (!stock_id || stock_id==0) {
+        alert('<?php echo display('please_select_stock'); ?>!');
+        return false;
+    }
 
    var priceClass = 'price_item'+sl;
    //var ManfacturarClass = 'priceClass'+sl;
@@ -891,6 +914,8 @@ function invoice_productList(sl) {
         minLength: 0,
         source: function( request, response ) {
             var product_name = $('#product_name_'+sl).val();
+            var stock_id = $('#stock_id').val();
+            
         $.ajax( {
           url: "<?php echo base_url('Cinvoice/autocompleteproductsearch')?>",
           method: 'post',
@@ -898,8 +923,10 @@ function invoice_productList(sl) {
           data: {
             term: request.term,
             product_name:product_name,
+            stock_id:stock_id,
           },
           success: function( data ) {
+            console.log('Returned products:', data);
             response( data );
 
           }
@@ -914,7 +941,10 @@ function invoice_productList(sl) {
                 $(this).val(ui.item.label);
            // var sl = $(this).parent().parent().find(".sl").val(); 
                 var id=ui.item.value;
-                var dataString = 'product_id='+ id;
+                //var dataString = 'product_id='+ id;
+                var stock_id=$("#stock_id").val();
+                //alert(stock_id);
+                var dataString = 'product_id=' + id + '&stock_id=' + stock_id;
                 var base_url = $('.baseUrl').val();
 
                 $.ajax
@@ -986,7 +1016,7 @@ $(document).ready(function(){
     btn.disabled = true;
 });
 </script>
-</script>
+
 
 
   

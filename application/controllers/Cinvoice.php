@@ -284,8 +284,9 @@ public function insert_pos_invoice()
 		$CI =& get_instance();
 		$this->auth->check_admin_auth();
 		$CI->load->model('Invoices');
-		$product_name 	= $this->input->post('product_name');
-        $product_info 	= $CI->Invoices->autocompletproductdata($product_name);
+		$product_name 	= $this->input->post('product_name',true);
+        $stock_id 	= $this->input->post('stock_id',true);
+        $product_info 	= $CI->Invoices->autocompletproductdata($product_name,$stock_id);
 
        if(!empty($product_info)){
 		$list[''] = '';
@@ -329,9 +330,10 @@ public function insert_pos_invoice()
 		$this->auth->check_admin_auth();
 		$CI->load->model('Invoices');
 		$product_id = $this->input->post('product_id');
+        $stock_id = $this->input->post('stock_id');
 		$manufacturer_id= $this->input->post('manufacturer_id');
 
-		$product_info = $CI->Invoices->get_total_product($product_id,$manufacturer_id);
+		$product_info = $CI->Invoices->get_total_product($product_id,$manufacturer_id,$stock_id);
 
 		echo json_encode($product_info);
 	}
@@ -342,6 +344,7 @@ public function insert_pos_invoice()
 public function retrieve_invoice_by_batch() {
     $product_id = $this->input->post('product_id');
     $batch_id   = $this->input->post('batch_id');
+    $stock_id   = $this->input->post('stock_id');
     $today = date('Y-m-d');
 
     // Step 1: Get all relevant purchase records (not expired)
@@ -349,6 +352,7 @@ public function retrieve_invoice_by_batch() {
     $this->db->from('product_purchase_details');
     $this->db->where('product_id', $product_id);
     $this->db->where('batch_id', $batch_id);
+    $this->db->where('stock_id', $stock_id);
     $this->db->where('expeire_date >=', $today); // exclude expired
     $purchase_records = $this->db->get()->result_array();
 
@@ -363,6 +367,7 @@ public function retrieve_invoice_by_batch() {
         $this->db->where('pinvoice_id', $invoice_id);
         $this->db->where('product_id', $product_id);
         $this->db->where('batch_id', $batch_id);
+         $this->db->where('stock_id', $stock_id);
         $sold = $this->db->get()->row();
 
         $sold_qty = !empty($sold->sold_qty) ? $sold->sold_qty : 0;
@@ -390,6 +395,7 @@ public function retrieve_qty_by_invoice() {
     $product_id = $this->input->post('product_id');
     $batch_id   = $this->input->post('batch_id');
     $invoice_id = $this->input->post('invoice_id');
+    $stock_id = $this->input->post('stock_id');
 
     // Step 1: Get purchase info
     $this->db->select('quantity as purchased_qty, expeire_date, sell_price, rate');
@@ -397,6 +403,7 @@ public function retrieve_qty_by_invoice() {
     $this->db->where('product_id', $product_id);
     $this->db->where('batch_id', $batch_id);
     $this->db->where('invoice_id', $invoice_id);
+    $this->db->where('stock_id', $stock_id);
     $purchase = $this->db->get()->row();
 
     if (!$purchase) {
@@ -417,6 +424,7 @@ public function retrieve_qty_by_invoice() {
     $this->db->where('pinvoice_id', $invoice_id);
     $this->db->where('product_id', $product_id);
     $this->db->where('batch_id', $batch_id);
+     $this->db->where('stock_id', $stock_id);
     $sold = $this->db->get()->row();
 
     $sold_qty = $sold && $sold->sold_qty ? $sold->sold_qty : 0;
@@ -454,7 +462,9 @@ public function retrieve_qty_by_invoice() {
 
 		$batch_id   = $this->input->post('batch_id');
        $product_id = $this->input->post('product_id'); // ✅ new
-		$product_info = $CI->Invoices->get_total_product_batch($batch_id,$product_id);
+       $stock_id = $this->input->post('stock_id');
+       //$stock_id = $this->input->post('stock_id');
+		$product_info = $CI->Invoices->get_total_product_batch($batch_id,$product_id,$stock_id);
 		echo json_encode($product_info);
 	}
 	//product info retrive by product id for invoice
@@ -464,7 +474,8 @@ public function retrieve_qty_by_invoice() {
 		$this->auth->check_admin_auth();
 		$CI->load->model('Invoices');
 		$product_id = $this->input->post('product_id');
-		$product_info = $CI->Invoices->get_total_product_invoic($product_id);
+        $stock_id = $this->input->post('stock_id');
+		$product_info = $CI->Invoices->get_total_product_invoic($product_id,$stock_id);
 		echo json_encode($product_info);
 	}
 	// Invoice delete

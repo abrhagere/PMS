@@ -79,14 +79,27 @@ class Chrm extends CI_Controller {
     return true;
     }
     // ================== Employee part =============================
-    public function add_employee() {
+   public function add_employee() {
+    // Check if the admin is authenticated
     $this->auth->check_admin_auth();
+
+    // Load required models
     $this->load->model('Hrm_model');
+    $this->load->model('Stocks');
+
+    // Get the logged-in user's ID
+    $user_id = $this->session->userdata('user_id');
+
+    // Prepare data for the view
     $data['title'] = display('add_employee');
     $data['desig'] = $this->Hrm_model->designation_dropdown();
+    $data['all_stock'] = $this->Stocks->get_stocks_assigned_to_user($user_id);
+
+    // Load the view
     $content = $this->parser->parse('hr/employee_form', $data, true);
     $this->template->full_admin_html_view($content);
-    }
+}
+
     // create employee
     public function create_employee(){
         $this->load->model('Hrm_model');
@@ -113,6 +126,7 @@ class Chrm extends CI_Controller {
                 'first_name'    => $this->input->post('first_name',true),
                 'last_name'     => $this->input->post('last_name',true),
                 'designation'   => $this->input->post('designation',true),
+                'stock_id'   => $this->input->post('stock_name',true),
                 'phone'         => $this->input->post('phone',true),
                 'image'         => (!empty($image_url) ? $image_url :''),
                 'rate_type'     => $this->input->post('rate_type',true),

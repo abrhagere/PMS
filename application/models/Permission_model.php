@@ -44,9 +44,22 @@ class Permission_model extends CI_Model {
         return false;
     }
     public function create($data = array()){
-	
-		$this->db->where('role_id', $data[0]['role_id'])->delete('role_permission');
-		return $this->db->insert_batch('role_permission', $data);
+		if (empty($data) || !is_array($data) || !isset($data[0]['role_id'])) {
+			return false;
+		}
+		
+		$role_id = $data[0]['role_id'];
+		
+		// Delete existing permissions for this role
+		$this->db->where('role_id', $role_id);
+		$this->db->delete('role_permission');
+		
+		// Insert new permissions
+		if (!empty($data)) {
+			return $this->db->insert_batch('role_permission', $data);
+		}
+		
+		return true; // If no permissions to add, deletion is still successful
 	}
     public function role_create($postData = array()){
         $this->db->insert('sec_userrole',$postData);
@@ -81,7 +94,15 @@ class Permission_model extends CI_Model {
         return true;
     }
     public function module(){
-        return $modules = $this->db->select('*')->from('module')->get()->result();
+        // Exclude standalone clinic modules since they're already under Clinic Management as sub-modules
+        // Keep only Clinic Management (id 24) which contains all clinic modules as sub-modules
+        $this->db->select('*');
+        $this->db->from('module');
+        $this->db->where('status', 1);
+        // Exclude individual clinic modules that are duplicated in Clinic Management sub-modules
+        $this->db->where_not_in('id', array(17, 18, 19, 20, 21, 22, 23)); // Patient Management, Appointments, Consultations, Vitals, Prescriptions, Lab Orders, Clinic Dashboard
+        $this->db->order_by('name', 'ASC');
+        return $this->db->get()->result();
     }
     public function role($id = null){
       return  $data = $this->db->select('*')
