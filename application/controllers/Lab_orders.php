@@ -86,6 +86,62 @@ class Lab_orders extends CI_Controller {
         $data = array();
         $data['title'] = 'New Lab Order';
         
+        // Handle form submission
+        if ($this->input->post('submit')) {
+            $patient_id = $this->input->post('patient_id');
+            $priority = $this->input->post('priority');
+            $clinical_notes = $this->input->post('clinical_notes');
+            $test_ids = $this->input->post('test_ids');
+            
+            if (!$patient_id) {
+                $this->session->set_flashdata('error_message', 'Please select a patient');
+                redirect('lab/orders/new');
+            }
+            
+            if (empty($test_ids) || !is_array($test_ids)) {
+                $this->session->set_flashdata('error_message', 'Please select at least one lab test');
+                redirect('lab/orders/new');
+            }
+            
+            // Get test details
+            $this->db->select('*');
+            $this->db->from('lab_tests');
+            $this->db->where_in('test_id', $test_ids);
+            $tests = $this->db->get()->result();
+            
+            // Create lab order
+            $order_data = array(
+                'patient_id' => $patient_id,
+                'ordered_by' => $this->session->userdata('user_id'),
+                'priority' => $priority ? $priority : 'Normal',
+                'notes' => $clinical_notes,
+                'status' => 'Pending',
+                'order_date' => date('Y-m-d H:i:s')
+            );
+            
+            $order_id = $this->Lab_order_model->create_order($order_data);
+            
+            if ($order_id) {
+                // Add test details
+                foreach ($tests as $test) {
+                    $detail_data = array(
+                        'order_id' => $order_id,
+                        'test_name' => $test->test_name,
+                        'test_category' => $test->test_category,
+                        'sample_type' => isset($test->sample_type) ? $test->sample_type : null
+                    );
+                    $this->Lab_order_model->add_order_detail($detail_data);
+                }
+                
+                $this->session->set_flashdata('message', 'Lab order created successfully');
+                redirect('lab/orders/view/' . $order_id);
+            } else {
+                $this->session->set_flashdata('error_message', 'Failed to create lab order. Please try again.');
+                redirect('lab/orders/new');
+            }
+        }
+        
+        // Display form
         if ($patient_id) {
             $data['patient'] = $this->Patient_model->get_patient($patient_id);
         }

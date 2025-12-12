@@ -1,82 +1,137 @@
 <!-- Patient Profile View with Tabs -->
 <div class="content-wrapper">
+    <!-- Content Header (Page header) -->
     <section class="content-header">
-        <div class="header-icon"><i class="pe-7s-user"></i></div>
+        <div class="header-icon">
+            <i class="pe-7s-user"></i>
+        </div>
         <div class="header-title">
             <h1>Patient Profile</h1>
             <small><?php echo $patient->patient_code; ?> - <?php echo $patient->first_name . ' ' . $patient->last_name; ?></small>
+            <ol class="breadcrumb">
+                <li><a href="<?php echo base_url(); ?>"><i class="pe-7s-home"></i> Home</a></li>
+                <li><a href="<?php echo base_url('patients'); ?>">Patients</a></li>
+                <li class="active">Patient Profile</li>
+            </ol>
         </div>
     </section>
 
+    <!-- Main content -->
     <section class="content">
         <style>
-        /* Patient View Custom Styles - Scrollable Tabs */
-        .visit-tabs-container {
-            position: relative !important;
-            overflow-x: auto !important;
-            overflow-y: hidden !important;
-            -webkit-overflow-scrolling: touch !important;
-            background: #f5f5f5 !important;
-            border-bottom: 2px solid #ddd !important;
+        /* Patient View Custom Styles - Dashboard Format */
+        /* Ensure content stays within dashboard layout - don't override wrapper margins */
+        .patient-view-container {
+            margin: 0;
+            padding: 0;
         }
-        .visit-tabs {
-            display: flex !important;
-            flex-wrap: nowrap !important;
-            white-space: nowrap !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            border-bottom: none !important;
-            min-width: 100% !important;
+        .patient-sidebar .patient-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
         }
-        .visit-tabs > li {
-            float: none !important;
-            display: inline-block !important;
-            white-space: nowrap !important;
-            margin: 0 !important;
+        .patient-sidebar h4 {
+            color: #fff;
+            margin-top: 0;
         }
-        .nav-tabs.visit-tabs > li > a,
-        .visit-tabs > li > a {
-            padding: 12px 20px !important;
-            color: #666 !important;
-            border: none !important;
-            border-bottom: 3px solid transparent !important;
-            border-radius: 0 !important;
-            font-weight: 500 !important;
-            white-space: nowrap !important;
-            transition: all 0.3s ease !important;
+        .patient-sidebar .patient-info {
+            color: #fff;
         }
-        .nav-tabs.visit-tabs > li > a:hover,
-        .visit-tabs > li > a:hover {
-            background-color: #f0f0f0 !important;
-            color: #1a237e !important;
-            border-bottom-color: #1a237e !important;
+        .patient-sidebar .btn {
+            margin-bottom: 8px;
+            width: 100%;
         }
-        .nav-tabs.visit-tabs > li.active > a,
-        .nav-tabs.visit-tabs > li.active > a:hover,
-        .nav-tabs.visit-tabs > li.active > a:focus,
-        .visit-tabs > li.active > a,
-        .visit-tabs > li.active > a:hover,
-        .visit-tabs > li.active > a:focus {
-            color: #1a237e !important;
-            background-color: #fff !important;
-            border-bottom-color: #1a237e !important;
-            font-weight: bold !important;
+        .patient-main-panel {
+            background: #fff;
+            border-radius: 0;
+            box-shadow: none;
+            margin-bottom: 0;
         }
-        .visit-tabs > li > a i {
-            margin-right: 5px;
+        .patient-header-section {
+            background: #1a237e !important;
+            color: #fff;
+            padding: 20px 25px;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-radius: 0;
         }
-        .visit-tabs-container::-webkit-scrollbar {
-            height: 8px;
+        .patient-header-section h4 {
+            color: #fff !important;
+            margin: 0;
+            font-weight: bold;
+            font-size: 18px;
         }
-        .visit-tabs-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
+        .patient-header-section a {
+            color: #9c27b0 !important;
+            text-decoration: underline !important;
+            font-size: 14px;
         }
-        .visit-tabs-container::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
+        .patient-header-section a:hover {
+            color: #9c27b0 !important;
+            text-decoration: underline !important;
         }
-        .visit-tabs-container::-webkit-scrollbar-thumb:hover {
-            background: #555;
+        .patient-tabs-nav {
+            background: #e8e8e8 !important;
+            border-bottom: 1px solid #ddd;
+            padding: 0;
+            margin: 0;
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+        }
+        .patient-tabs-nav .nav-tabs {
+            border-bottom: none;
+            margin: 0;
+            display: flex;
+            flex-wrap: nowrap;
+            background: #e8e8e8;
+            border-radius: 0;
+        }
+        .patient-tabs-nav .nav-tabs > li {
+            float: none;
+            display: inline-block;
+            margin: 0;
+        }
+        .patient-tabs-nav .nav-tabs > li > a {
+            padding: 14px 20px;
+            color: #666;
+            border: none;
+            border-bottom: 2px solid transparent;
+            border-radius: 0;
+            font-weight: 400;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            background: transparent;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .patient-tabs-nav .nav-tabs > li > a:hover {
+            background-color: transparent;
+            color: #1a237e;
+            border-bottom-color: #ddd;
+            text-decoration: none;
+        }
+        .patient-tabs-nav .nav-tabs > li.active > a,
+        .patient-tabs-nav .nav-tabs > li.active > a:hover,
+        .patient-tabs-nav .nav-tabs > li.active > a:focus {
+            color: #1a237e;
+            background-color: transparent;
+            border-bottom: 2px solid #1a237e;
+            font-weight: 500;
+            text-decoration: none;
+        }
+        .patient-tabs-nav .nav-tabs > li > a i {
+            display: none;
+        }
+        .patient-content-area {
+            background: #fff;
+            padding: 20px;
+            min-height: 500px;
         }
         .tab-content {
             background: #fff;
@@ -89,218 +144,93 @@
             to { opacity: 1; }
         }
         @media (max-width: 768px) {
-            .visit-tabs > li > a {
-                padding: 10px 15px;
-                font-size: 12px;
+            .patient-tabs-nav .nav-tabs > li > a {
+                padding: 12px 15px;
+                font-size: 11px;
             }
-            .visit-tabs > li > a i {
+            .patient-tabs-nav .nav-tabs > li > a i {
                 display: none;
             }
         }
         </style>
+        
+        <!-- Alert Messages -->
         <?php if ($this->session->flashdata('message')): ?>
         <div class="alert alert-success alert-dismissable">
-            <button type="button" class="close" data-dismiss="alert">×</button>
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
             <?php echo $this->session->flashdata('message'); ?>
         </div>
-        <?php endif; ?>
+        <?php 
+            $this->session->unset_userdata('message');
+        endif; 
+        if ($this->session->flashdata('error_message')): ?>
+        <div class="alert alert-danger alert-dismissable">
+            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+            <?php echo $this->session->flashdata('error_message'); ?>
+        </div>
+        <?php 
+            $this->session->unset_userdata('error_message');
+        endif; 
+        ?>
 
+        <!-- Patient View Panel -->
         <div class="row">
-            <!-- Patient Info Sidebar -->
-            <div class="col-md-3">
-                <div class="panel panel-bd">
-                    <div class="panel-body text-center" style="padding: 20px;">
-                        <?php if (!empty($patient->photo)): ?>
-                            <img src="<?php echo base_url($patient->photo); ?>" 
-                                 alt="<?php echo $patient->first_name; ?>" 
-                                 class="img-circle" 
-                                 style="width: 120px; height: 120px; border: 4px solid #1a237e; margin-bottom: 15px;">
-                        <?php else: ?>
-                            <div style="width: 120px; height: 120px; background: #1a237e; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 15px; border: 4px solid #1a237e;">
-                                <i class="fa fa-user fa-4x" style="color: white;"></i>
-                            </div>
-                        <?php endif; ?>
-                        
-                        <h3 style="margin: 10px 0; color: #1a237e; font-weight: bold;">
-                            <?php echo $patient->first_name . ' ' . $patient->last_name; ?>
-                        </h3>
-                        <p style="color: #666; margin-bottom: 5px;">
-                            <strong>ID:</strong> <?php echo $patient->patient_code; ?>
-                        </p>
-                        <p style="color: #666; margin-bottom: 5px;">
-                            <strong>Gender:</strong> <?php echo $patient->gender; ?>
-                        </p>
-                        <p style="color: #666; margin-bottom: 5px;">
-                            <strong>Age:</strong> 
-                            <?php 
-                            if ($patient->date_of_birth) {
-                                $dob = new DateTime($patient->date_of_birth);
-                                $now = new DateTime();
-                                $age = $now->diff($dob);
-                                echo $age->y . ' years';
-                            } else {
-                                echo $patient->age_years . ' years';
-                            }
-                            ?>
-                        </p>
-                        
-                        <div class="btn-group-vertical" style="width: 100%;">
-                            <a href="<?php echo base_url('appointments/book?patient='.$patient->patient_id); ?>" 
-                               class="btn btn-primary btn-sm" style="margin-bottom: 5px;">
-                                <i class="fa fa-calendar-plus-o"></i> Book Appointment
-                            </a>
-                            <a href="<?php echo base_url('vitals/record/'.$patient->patient_id); ?>" 
-                               class="btn btn-info btn-sm" style="margin-bottom: 5px;">
-                                <i class="fa fa-heartbeat"></i> Record Vitals
-                            </a>
-                            <?php if($this->permission1->module('consultations')->access()): ?>
-                            <a href="<?php echo base_url('consultations/create?patient='.$patient->patient_id); ?>" 
-                               class="btn btn-success btn-sm" style="margin-bottom: 5px;">
-                                <i class="fa fa-stethoscope"></i> New Consultation
-                            </a>
-                            <?php endif; ?>
-                            <?php 
-                            // Show payment button for reception/cashier roles
-                            $user_id = $this->session->userdata('user_id');
-                            $is_reception = false;
-                            if ($user_id) {
-                                $user_id_str = (string)$user_id;
-                                $this->db->select('sr.type');
-                                $this->db->from('sec_userrole sur');
-                                $this->db->join('sec_role sr', 'sr.id = sur.roleid');
-                                $this->db->where('sur.user_id', $user_id_str);
-                                $this->db->where_in('sr.type', array('Reception', 'Cashier'));
-                                $query = $this->db->get();
-                                $is_reception = $query->num_rows() > 0;
-                            }
-                            if ($is_reception):
-                            ?>
-                            <button type="button" class="btn btn-warning btn-sm" data-toggle="modal" data-target="#paymentModal" style="margin-bottom: 5px;">
-                                <i class="fa fa-money"></i> Process Payment
-                            </button>
-                            <?php endif; ?>
-                        </div>
-                    </div>
+            <div class="col-xs-12" style="padding: 0;">
+                <!-- Dark Blue Header Section -->
+                <div class="patient-header-section">
+                    <h4>Patient Profile - <?php echo $patient->first_name . ' ' . $patient->last_name; ?></h4>
+                    <a href="<?php echo base_url('patients'); ?>">Back to List</a>
                 </div>
-
-                <!-- Quick Info -->
-                <div class="panel panel-bd">
-                    <div class="panel-heading">
-                        <h4>Quick Info</h4>
-                    </div>
-                    <div class="panel-body">
-                        <table class="table table-condensed">
-                            <tr>
-                                <td><strong>Phone:</strong></td>
-                                <td><?php echo $patient->phone; ?></td>
-                            </tr>
-                            <?php if ($patient->email): ?>
-                            <tr>
-                                <td><strong>Email:</strong></td>
-                                <td><?php echo $patient->email; ?></td>
-                            </tr>
-                            <?php endif; ?>
-                            <tr>
-                                <td><strong>Address:</strong></td>
-                                <td>
-                                    <?php 
-                                    $address_parts = array_filter([
-                                        $patient->city,
-                                        $patient->zone,
-                                        $patient->region,
-                                        $patient->country
-                                    ]);
-                                    echo implode(', ', $address_parts);
-                                    ?>
-                                </td>
-                            </tr>
-                            <?php if ($patient->marital_status): ?>
-                            <tr>
-                                <td><strong>Marital:</strong></td>
-                                <td><?php echo ucfirst($patient->marital_status); ?></td>
-                            </tr>
-                            <?php endif; ?>
-                        </table>
-                    </div>
+                
+                <!-- Horizontal Tabs Navigation (Light Gray) -->
+                <div class="patient-tabs-nav">
+                                <ul class="nav nav-tabs" role="tablist" id="visitTabs">
+                                    <li role="presentation" class="active">
+                                        <a href="#triage" aria-controls="triage" role="tab" data-toggle="tab">TRIAGE</a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">SUMMARY</a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#history" aria-controls="history" role="tab" data-toggle="tab">HISTORY</a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#physical" aria-controls="physical" role="tab" data-toggle="tab">P/E</a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#diagnosis" aria-controls="diagnosis" role="tab" data-toggle="tab">DIAGNOSIS</a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#investigation" aria-controls="investigation" role="tab" data-toggle="tab">INVESTIGATION</a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#procedures" aria-controls="procedures" role="tab" data-toggle="tab">PROCEDURES</a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#prescription" aria-controls="prescription" role="tab" data-toggle="tab">PRESCRIPTION</a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#admission" aria-controls="admission" role="tab" data-toggle="tab">ADMISSION</a>
+                                    </li>
+                                    <li role="presentation">
+                                        <a href="#print" aria-controls="print" role="tab" data-toggle="tab">PRINT</a>
+                                    </li>
+                                </ul>
                 </div>
-            </div>
-
-            <!-- Main Content with Tabs -->
-            <div class="col-md-9">
-                <div class="panel panel-bd">
-                    <div class="panel-body" style="padding: 0;">
-                        <!-- Scrollable Tabs -->
-                        <div class="visit-tabs-container">
-                            <ul class="nav nav-tabs visit-tabs" role="tablist" id="visitTabs">
-                                <li role="presentation" class="active">
-                                    <a href="#triage" aria-controls="triage" role="tab" data-toggle="tab">
-                                        <i class="fa fa-ambulance"></i> TRIAGE
-                                    </a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#summary" aria-controls="summary" role="tab" data-toggle="tab">
-                                        <i class="fa fa-file-text"></i> SUMMARY
-                                    </a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#history" aria-controls="history" role="tab" data-toggle="tab">
-                                        <i class="fa fa-history"></i> HISTORY
-                                    </a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#physical" aria-controls="physical" role="tab" data-toggle="tab">
-                                        <i class="fa fa-stethoscope"></i> P/E
-                                    </a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#diagnosis" aria-controls="diagnosis" role="tab" data-toggle="tab">
-                                        <i class="fa fa-clipboard"></i> DIAGNOSIS
-                                    </a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#investigation" aria-controls="investigation" role="tab" data-toggle="tab">
-                                        <i class="fa fa-flask"></i> INVESTIGATION
-                                    </a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#procedures" aria-controls="procedures" role="tab" data-toggle="tab">
-                                        <i class="fa fa-medkit"></i> PROCEDURES
-                                    </a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#prescription" aria-controls="prescription" role="tab" data-toggle="tab">
-                                        <i class="fa fa-file-text-o"></i> PRESCRIPTION
-                                    </a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#admission" aria-controls="admission" role="tab" data-toggle="tab">
-                                        <i class="fa fa-bed"></i> ADMISSION
-                                    </a>
-                                </li>
-                                <li role="presentation">
-                                    <a href="#print" aria-controls="print" role="tab" data-toggle="tab">
-                                        <i class="fa fa-print"></i> PRINT
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <!-- Tab Content -->
-                        <div class="tab-content" style="padding: 20px; min-height: 400px;">
+                
+                <!-- Tab Content Area (White background below tabs) -->
+                <div class="patient-content-area">
+                        <div class="tab-content">
                             <!-- TRIAGE Tab -->
                             <div role="tabpanel" class="tab-pane active" id="triage">
-                                <div class="row" style="margin-bottom: 20px;">
-                                    <div class="col-md-6">
-                                        <h3 style="color: #1a237e; margin: 0;">
-                                            <i class="fa fa-ambulance"></i> Triage Information
-                                        </h3>
-                                    </div>
-                                    <div class="col-md-6 text-right">
-                                        <a href="<?php echo base_url('vitals/record/'.$patient->patient_id); ?>" 
-                                           class="btn btn-success btn-lg">
-                                            <i class="fa fa-plus-circle"></i> Add Triage
-                                        </a>
-                                    </div>
+                                <div style="margin-bottom: 25px;">
+                                    <h3 style="color: #1a237e; margin: 0 0 10px 0; font-weight: bold; font-size: 20px;">
+                                        Triage Information
+                                    </h3>
+                                    <a href="<?php echo base_url('vitals/record/'.$patient->patient_id); ?>" 
+                                       style="color: #1a237e; text-decoration: underline; font-size: 14px;">
+                                        Add Triage
+                                    </a>
                                 </div>
                                 
                                 <?php if (isset($latest_visit) && $latest_visit): ?>
@@ -397,51 +327,45 @@
                                     </div>
                                 </div>
                                 <?php else: ?>
-                                <div class="alert alert-info">
-                                    <i class="fa fa-info-circle"></i> No recent visit found. 
-                                    <a href="<?php echo base_url('appointments/book?patient='.$patient->patient_id); ?>">Book an appointment</a>
+                                <div style="margin-top: 15px;">
+                                    <p style="margin: 0; color: #333;">
+                                        No recent visit found. 
+                                        <a href="<?php echo base_url('appointments/book?patient='.$patient->patient_id); ?>" style="color: #1a237e; text-decoration: underline;">Book an appointment</a>
+                                    </p>
                                 </div>
                                 <?php endif; ?>
                             </div>
 
                             <!-- SUMMARY Tab -->
                             <div role="tabpanel" class="tab-pane" id="summary">
-                                <h3 style="color: #1a237e; margin-bottom: 20px;">
-                                    <i class="fa fa-file-text"></i> Patient Summary
-                                </h3>
+                                <div style="margin-bottom: 30px;">
+                                    <h3 style="color: #1a237e; margin: 0 0 20px 0; font-weight: bold; font-size: 20px;">
+                                        Patient Summary
+                                    </h3>
+                                    
+                                    <h4 style="color: #000; margin: 0 0 15px 0; font-weight: bold; font-size: 16px;">
+                                        Demographics
+                                    </h4>
+                                    
+                                    <div style="line-height: 2;">
+                                        <p style="margin: 5px 0;"><strong>Full Name:</strong> <?php echo $patient->first_name . ' ' . ($patient->middle_name ? $patient->middle_name . ' ' : '') . $patient->last_name; ?></p>
+                                        <p style="margin: 5px 0;"><strong>Patient Code:</strong> <?php echo $patient->patient_code; ?></p>
+                                        <p style="margin: 5px 0;"><strong>Date of Birth:</strong> <?php echo $patient->date_of_birth ? date('F d, Y', strtotime($patient->date_of_birth)) : 'N/A'; ?></p>
+                                        <p style="margin: 5px 0;"><strong>Gender:</strong> <?php echo $patient->gender; ?></p>
+                                        <p style="margin: 5px 0;"><strong>Marital Status:</strong> <?php echo $patient->marital_status ? ucfirst($patient->marital_status) : 'N/A'; ?></p>
+                                    </div>
+                                </div>
                                 
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="panel panel-default">
                                             <div class="panel-heading">
-                                                <h4>Demographics</h4>
+                                                <h4>Additional Information</h4>
                                             </div>
                                             <div class="panel-body">
                                                 <div class="row">
                                                     <div class="col-md-6">
                                                         <table class="table table-bordered">
-                                                            <tr>
-                                                                <th width="40%">Full Name:</th>
-                                                                <td><?php echo $patient->first_name . ' ' . ($patient->middle_name ? $patient->middle_name . ' ' : '') . $patient->last_name; ?></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <th>Patient Code:</th>
-                                                                <td><strong><?php echo $patient->patient_code; ?></strong></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <th>Date of Birth:</th>
-                                                                <td><?php echo $patient->date_of_birth ? date('F d, Y', strtotime($patient->date_of_birth)) : 'N/A'; ?></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <th>Gender:</th>
-                                                                <td><?php echo $patient->gender; ?></td>
-                                                            </tr>
-                                                            <tr>
-                                                                <th>Marital Status:</th>
-                                                                <td><?php echo $patient->marital_status ? ucfirst($patient->marital_status) : 'N/A'; ?></td>
-                                                            </tr>
-                                                        </table>
-                                                    </div>
                                                     <div class="col-md-6">
                                                         <table class="table table-bordered">
                                                             <tr>
@@ -1654,8 +1578,6 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
